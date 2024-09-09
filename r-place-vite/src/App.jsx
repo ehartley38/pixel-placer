@@ -4,6 +4,8 @@ import axiosInstance from "./services/axios";
 import { supabase } from "./services/supabaseClient";
 import Auth from "./components/auth/Auth";
 import Account from "./components/profile/Account";
+import Canvas from "./components/canvas/Canvas";
+import { Route, Routes } from "react-router-dom";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -29,15 +31,17 @@ function App() {
     }
   };
 
+  if (!session) return <Auth />;
+
   return (
     <>
-      <div className="container" style={{ padding: "50px 0 100px 0" }}>
-        {!session ? (
-          <Auth />
-        ) : (
-          <Account key={session.user.id} session={session} />
-        )}
-      </div>
+      <Routes>
+        <Route path="/" element={<Canvas session={session}/>} />
+        <Route
+          path="/Account"
+          element={<Account key={session.user.id} session={session} />}
+        />
+      </Routes>
     </>
   );
 }
