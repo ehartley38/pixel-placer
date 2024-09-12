@@ -1,6 +1,6 @@
 import Redis from "ioredis";
 
-const CANVAS_WIDTH = 100;
+const CANVAS_WIDTH = 10;
 const redis = new Redis({});
 
 const createCanvas = async () => {
