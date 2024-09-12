@@ -1,6 +1,11 @@
 import { Redis } from 'ioredis';
+// import 'dotenv/config'
 
-export const getPixelColour = async (x, y, canvasWidth) => {
+const canvasWidth = process.env.CANVAS_WIDTH
+
+export const getPixelColour = async (x, y) => {
+  console.log(canvasWidth);
+  
   if (x < 0 || x >= canvasWidth || y < 0 || y >= canvasWidth) {
     throw new Error("Coords out of bounds");
   }

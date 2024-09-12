@@ -1,6 +1,8 @@
 import Redis from "ioredis";
 
-export const setPixelColour = async (x, y, colour, canvasWidth) => {
+const canvasWidth = process.env.CANVAS_WIDTH
+
+export const setPixelColour = async (x, y, colour) => {
   if (x < 0 || x >= canvasWidth || y < 0 || y >= canvasWidth) {
     throw new Error("Coords out of bounds");
   }

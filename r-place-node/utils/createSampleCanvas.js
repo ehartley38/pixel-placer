@@ -1,13 +1,15 @@
 import Redis from "ioredis";
 
-const CANVAS_WIDTH = 10;
+const canvasWidth = process.env.CANVAS_WIDTH || 100
+console.log(canvasWidth);
+
 const redis = new Redis({});
 
 const createCanvas = async () => {
   let cnt = 0;
 
-  for (let x = 0; x < CANVAS_WIDTH; x++) {
-    for (let y = 0; y < CANVAS_WIDTH; y++) {
+  for (let x = 0; x < canvasWidth; x++) {
+    for (let y = 0; y < canvasWidth; y++) {
       const randomColour = Math.floor(Math.random() * 15)
 
       await setPixelColour(x, y, randomColour);
@@ -18,7 +20,7 @@ const createCanvas = async () => {
 };
 
 const setPixelColour = async (x, y, colour) => {
-  const offset = (y * CANVAS_WIDTH + x);
+  const offset = (y * canvasWidth + x);
   await redis.bitfield("canvas_bitmap", "SET", "u4", `#${offset}`, colour)
 };
 

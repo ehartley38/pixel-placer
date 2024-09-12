@@ -1,16 +1,19 @@
 import { Router } from "express";
-// import Redis from "redis";
+import 'dotenv/config'
 import Redis from "ioredis";
 import { setPixelColour } from "../utils/setPixelColour.js";
 import { getPixelColour } from "../utils/getPixelColour.js";
 
+const canvasWidth = process.env.CANVAS_WIDTH
+
 const mainRouter = Router();
 const redis = new Redis({});
+
 
 const redisTestFunction = async () => {
   try {
     const bitWidth = 4;
-    const totalBits = 10 * 10 * bitWidth;
+    const totalBits = canvasWidth * canvasWidth * bitWidth;
     const maxBitsPerFetch = 32;
     const totalFetches = Math.ceil(totalBits / maxBitsPerFetch);
 
@@ -108,7 +111,7 @@ mainRouter.get("/get-pixel/:xCoord/:yCoord", async (req, res) => {
   const y = parseInt(req.params.yCoord);
 
   try {
-    const colour = await getPixelColour(x, y, 10);
+    const colour = await getPixelColour(x, y);
 
     return res.status(200).json({msg: colour})
   } catch (err) {
@@ -122,7 +125,7 @@ mainRouter.post("/set-pixel/:xCoord/:yCoord/:colour", async (req, res) => {
   const colour = req.params.colour;
 
   try {
-    await setPixelColour(x, y, colour, 10);
+    await setPixelColour(x, y, colour);
   } catch (err) {
     console.log(err);
   }
