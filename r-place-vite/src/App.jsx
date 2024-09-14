@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import "./App.css";
-import axiosInstance from "./services/axios";
 import { supabase } from "./services/supabaseClient";
 import Auth from "./components/auth/Auth";
 import Account from "./components/profile/Account";
 import Canvas from "./components/canvas/Canvas";
 import { Route, Routes } from "react-router-dom";
+import { axiosInstance } from "./services/axios";
 
 function App() {
   const [count, setCount] = useState(0);
