@@ -107,7 +107,7 @@ export default function InteractiveMap({ session }) {
 
   const handleWheel = useCallback(
     (e) => {
-      e.preventDefault();
+      window.addEventListener('wheel', { passive: false })
 
       const rect = canvasRef.current.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
@@ -128,6 +128,9 @@ export default function InteractiveMap({ session }) {
 
       setScale(newScale);
       setOffset(newOffset);
+
+      
+
     },
     [scale, offset]
   );
