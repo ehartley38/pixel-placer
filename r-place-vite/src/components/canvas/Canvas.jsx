@@ -68,6 +68,7 @@ export default function InteractiveMap({ session }) {
   const handleMouseMove = useCallback(
     (e) => {
       if (!dragging) return;
+      
 
       const dx = e.clientX - dragStart.x;
       const dy = e.clientY - dragStart.y;
@@ -85,10 +86,6 @@ export default function InteractiveMap({ session }) {
         const clampedX = Math.max(-maxOffsetX, Math.min(newX, maxOffsetX));
         const clampedY = Math.max(-maxOffsetY, Math.min(newY, maxOffsetY));
 
-        if (clampedX === -maxOffsetX || clampedX === maxOffsetX || clampedY === -maxOffsetY || clampedY === maxOffsetY) {
-          setDragging(false);
-        }
-
         return {
           x: clampedX,
           y: clampedY,
@@ -99,6 +96,10 @@ export default function InteractiveMap({ session }) {
     },
     [dragging, dragStart, scale]
   );
+
+  const handleMouseLeave = useCallback(() => {
+    setDragging(false);
+  }, []);
 
   const handleMouseUp = useCallback(() => {
     setDragging(false);
@@ -135,7 +136,7 @@ export default function InteractiveMap({ session }) {
 
   return (
     <div
-      className="fixed inset-0 overflow-hidden bg-blue-600"
+      className="fixed inset-0 overflow-hidden"
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseUp}
@@ -154,6 +155,7 @@ export default function InteractiveMap({ session }) {
         }}
         onMouseDown={handleMouseDown}
         onMouseUp={handleMouseUp}
+        onMouseLeave={handleMouseLeave}
       >
         <canvas
           ref={canvasRef}
