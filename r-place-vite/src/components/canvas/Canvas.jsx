@@ -72,10 +72,28 @@ export default function InteractiveMap({ session }) {
       const dx = e.clientX - dragStart.x;
       const dy = e.clientY - dragStart.y;
 
-      setOffset((prevOffset) => ({
-        x: prevOffset.x - dx / scale,
-        y: prevOffset.y - dy / scale,
-      }));
+      const pageWidth = window.innerWidth;
+      const pageHeight = window.innerHeight;
+
+      const maxOffsetX = pageWidth * 0.1;
+      const maxOffsetY = pageHeight * 0.05;
+
+      setOffset((prevOffset) => {
+        const newX = prevOffset.x - dx / scale;
+        const newY = prevOffset.y - dy / scale;
+
+        const clampedX = Math.max(-maxOffsetX, Math.min(newX, maxOffsetX));
+        const clampedY = Math.max(-maxOffsetY, Math.min(newY, maxOffsetY));
+
+        if (clampedX === -maxOffsetX || clampedX === maxOffsetX || clampedY === -maxOffsetY || clampedY === maxOffsetY) {
+          setDragging(false);
+        }
+
+        return {
+          x: clampedX,
+          y: clampedY,
+        };
+      });
 
       setDragStart({ x: e.clientX, y: e.clientY });
     },
