@@ -4,7 +4,7 @@ import colourPalette from "../../utils/pallette";
 
 const canvasWidth = import.meta.env.VITE_CANVAS_WIDTH;
 
-export default function InteractiveMap({ session }) {
+export default function Canvas({ session }) {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const [scale, setScale] = useState(5);
@@ -68,7 +68,6 @@ export default function InteractiveMap({ session }) {
   const handleMouseMove = useCallback(
     (e) => {
       if (!dragging) return;
-      
 
       const dx = e.clientX - dragStart.x;
       const dy = e.clientY - dragStart.y;
@@ -107,7 +106,7 @@ export default function InteractiveMap({ session }) {
 
   const handleWheel = useCallback(
     (e) => {
-      window.addEventListener('wheel', { passive: false })
+      window.addEventListener("wheel", { passive: false });
 
       const rect = canvasRef.current.getBoundingClientRect();
       const mouseX = e.clientX - rect.left;
@@ -128,14 +127,11 @@ export default function InteractiveMap({ session }) {
 
       setScale(newScale);
       setOffset(newOffset);
-
-      
-
     },
     [scale, offset]
   );
 
-  const mapTransform = `scale(${scale}) translate(${-offset.x}px, ${-offset.y}px)`;
+  const canvasTransform = `scale(${scale}) translate(${-offset.x}px, ${-offset.y}px)`;
 
   return (
     <div
@@ -164,7 +160,7 @@ export default function InteractiveMap({ session }) {
           ref={canvasRef}
           style={{
             imageRendering: "pixelated",
-            transform: mapTransform,
+            transform: canvasTransform,
             transformOrigin: "center",
             transition: dragging ? "none" : "transform 0.1s ease-out",
           }}
