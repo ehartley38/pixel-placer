@@ -6,6 +6,7 @@ import Account from "./components/profile/Account";
 import Canvas from "./components/canvas/Canvas";
 import { Route, Routes } from "react-router-dom";
 import { axiosInstance } from "./services/axios";
+import Canvas2 from "./components/canvas/Canvas2";
 
 function App() {
   const [count, setCount] = useState(0);
@@ -36,7 +37,9 @@ function App() {
   return (
     <>
       <Routes>
-        <Route path="/" element={<Canvas session={session}/>} />
+        {/* <Route path="/" element={<Canvas session={session}/>} /> */}
+        <Route path="/" element={<Canvas2/>} />
+
         <Route
           path="/Account"
           element={<Account key={session.user.id} session={session} />}
