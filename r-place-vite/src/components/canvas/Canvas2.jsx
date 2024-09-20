@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
 import { axiosBinaryResInstance, axiosInstance } from "../../services/axios";
 import colourPalette from "../../utils/pallette";
+import { connectSocket, getSocket } from "../../services/socket";
 
 const canvasWidth = import.meta.env.VITE_CANVAS_WIDTH;
 const abgrPalette = colourPalette.map(
@@ -19,6 +20,24 @@ const Canvas2 = () => {
   const [hoveredPixel, setHoveredPixel] = useState({ x: -1, y: -1 });
 
   const zoomIntensity = 0.1;
+
+  useEffect(() => {
+    const socket = connectSocket();
+
+    socket.on("canvas-update", (data) => {
+      console.log("New pixel data:", data);
+
+      const { x, y, colourIndex } = data;
+      updatePixelFromSocket(x, y, colourIndex);
+    });
+
+    return () => {
+      // Clean up on unmount
+      if (socket.connected) {
+        socket.disconnect();
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const fetchCanvasState = async () => {
@@ -73,6 +92,22 @@ const Canvas2 = () => {
   }, []);
 
   const updatePixel = async (x, y, colourIndex) => {
+    updateImageData(x, y, colourIndex);
+
+    try {
+      await axiosInstance.post(`/set-pixel/${x}/${y}/${colourIndex}`);
+      const socket = getSocket();
+      socket.emit("pixel-update", { x, y, colourIndex });
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  const updatePixelFromSocket = (x, y, colourIndex) => {
+    updateImageData(x, y, colourIndex);
+  };
+
+  const updateImageData = (x, y, colourIndex) => {
     if (x < 0 || x >= canvasWidth || y < 0 || y >= canvasWidth) {
       console.error("Pixel coordinates out of bounds");
       return;
@@ -92,12 +127,6 @@ const Canvas2 = () => {
     uint32Array[index / 4] = abgrPalette[colourIndex];
 
     context.putImageData(imageData, 0, 0);
-
-    try {
-      await axiosInstance.post(`/set-pixel/${x}/${y}/${colourIndex}`);
-    } catch (err) {
-      console.error(err);
-    }
   };
 
   const handleWheel = (e) => {
@@ -158,7 +187,6 @@ const Canvas2 = () => {
       const y = Math.floor((e.clientY - rect.top - offset.y) / scale);
 
       if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasWidth) {
-        console.log(`Clicked on pixel: x=${x}, y=${y}`);
         updatePixel(x, y, 0);
       }
     }

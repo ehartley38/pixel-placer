@@ -1,29 +1,23 @@
 import { Router } from "express";
-import 'dotenv/config'
+import "dotenv/config";
 import Redis from "ioredis";
 import { setPixelColour } from "../utils/setPixelColour.js";
 import { getPixelColour } from "../utils/getPixelColour.js";
 import { getCanvasState } from "../utils/getCanvasState.js";
 
-const canvasWidth = process.env.CANVAS_WIDTH
+const canvasWidth = process.env.CANVAS_WIDTH;
 
 const mainRouter = Router();
 const redis = new Redis({});
 
-
-
-
 mainRouter.get("/get-canvas", async (req, res) => {
-  
   const canvasState = await getCanvasState();
-  
 
-  const buffer = Buffer.from(canvasState)
-  res.setHeader('Content-Type', 'application/octet-stream')
-  res.setHeader("Content-Length", buffer.length)
-  
+  const buffer = Buffer.from(canvasState);
+  res.setHeader("Content-Type", "application/octet-stream");
+  res.setHeader("Content-Length", buffer.length);
 
-  return res.status(201).send(buffer)
+  return res.status(201).send(buffer);
 });
 
 mainRouter.get("/get-pixel/:xCoord/:yCoord", async (req, res) => {
@@ -33,7 +27,7 @@ mainRouter.get("/get-pixel/:xCoord/:yCoord", async (req, res) => {
   try {
     const colour = await getPixelColour(x, y);
 
-    return res.status(200).json({msg: colour})
+    return res.status(200).json({ msg: colour });
   } catch (err) {
     console.log(err);
   }
