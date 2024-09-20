@@ -1,8 +1,10 @@
 import React, { useEffect, useRef, useState, useCallback } from "react";
-import { axiosBinaryResInstance } from "../../services/axios";
+import { axiosBinaryResInstance, axiosInstance } from "../../services/axios";
 import colourPalette from "../../utils/pallette";
 
 const canvasWidth = import.meta.env.VITE_CANVAS_WIDTH;
+const abgrPalette = colourPalette.map(([r, g, b, a]) => (a << 24) | (b << 16) | (g << 8) | r);
+
 
 const Canvas2 = () => {
   const canvasRef = useRef(null);
@@ -10,6 +12,7 @@ const Canvas2 = () => {
   const [scale, setScale] = useState(5);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
+  const [isClick, setIsClick] = useState(false);
   const [startPan, setStartPan] = useState({ x: 0, y: 0 });
   const [hoveredPixel, setHoveredPixel] = useState({ x: -1, y: -1 });
 
@@ -33,6 +36,11 @@ const Canvas2 = () => {
         canvas.height = canvasWidth;
 
         const imageData = context.createImageData(canvasWidth, canvasWidth);
+        const buffer = new ArrayBuffer(imageData.data.length)
+        const uint8Array = new Uint8ClampedArray(buffer)
+        const uint32Array = new Uint32Array(buffer)
+
+
         let pixelIndex = 0;
 
         for (let i = 0; i < canvasState.length; i++) {
@@ -40,20 +48,24 @@ const Canvas2 = () => {
           const firstColourIndex = (byte >> 4) & 0x0f;
           const secondColourIndex = byte & 0x0f;
 
-          const colour1 = colourPalette[firstColourIndex];
-          const colour2 = colourPalette[secondColourIndex];
+          uint32Array[pixelIndex++] = abgrPalette[firstColourIndex]
+          uint32Array[pixelIndex++] = abgrPalette[secondColourIndex]
 
-          imageData.data[pixelIndex++] = colour1[0];
-          imageData.data[pixelIndex++] = colour1[1];
-          imageData.data[pixelIndex++] = colour1[2];
-          imageData.data[pixelIndex++] = colour1[3];
+          // const colour1 = colourPalette[firstColourIndex];
+          // const colour2 = colourPalette[secondColourIndex];
 
-          imageData.data[pixelIndex++] = colour2[0];
-          imageData.data[pixelIndex++] = colour2[1];
-          imageData.data[pixelIndex++] = colour2[2];
-          imageData.data[pixelIndex++] = colour2[3];
+          // imageData.data[pixelIndex++] = colour1[0];
+          // imageData.data[pixelIndex++] = colour1[1];
+          // imageData.data[pixelIndex++] = colour1[2];
+          // imageData.data[pixelIndex++] = colour1[3];
+
+          // imageData.data[pixelIndex++] = colour2[0];
+          // imageData.data[pixelIndex++] = colour2[1];
+          // imageData.data[pixelIndex++] = colour2[2];
+          // imageData.data[pixelIndex++] = colour2[3];
         }
 
+        imageData.data.set(uint8Array)
         context.putImageData(imageData, 0, 0);
       } catch (err) {
         console.error("Error fetching canvas state:", err);
@@ -80,9 +92,7 @@ const Canvas2 = () => {
 
     const newScale = scale * zoom;
 
-    console.log(newScale);
-    if (newScale < 2 || newScale > 50) return
-    
+    if (newScale < 2 || newScale > 50) return;
 
     setScale(newScale);
     setOffset((prevOffset) => ({
@@ -92,11 +102,16 @@ const Canvas2 = () => {
   };
 
   const handleMouseDown = (e) => {
-    setIsDragging(true);
+    setIsClick(true);
     setStartPan({ x: e.clientX - offset.x, y: e.clientY - offset.y });
   };
 
   const handleMouseMove = (e) => {
+    if (isClick) {
+      setIsDragging(true);
+      setIsClick(false);
+    }
+
     if (isDragging) {
       setOffset({
         x: e.clientX - startPan.x,
@@ -115,8 +130,20 @@ const Canvas2 = () => {
     }
   };
 
-  const handleMouseUp = () => {
+  const handleMouseUp = (e) => {
+    if (isClick && !isDragging) {
+      const rect = containerRef.current.getBoundingClientRect();
+      const x = Math.floor((e.clientX - rect.left - offset.x) / scale);
+      const y = Math.floor((e.clientY - rect.top - offset.y) / scale);
+
+      if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasWidth) {
+        console.log(`Clicked on pixel: x=${x}, y=${y}`);
+
+      }
+    }
+
     setIsDragging(false);
+    setIsClick(false);
   };
 
   return (
@@ -148,13 +175,13 @@ const Canvas2 = () => {
         {hoveredPixel.x !== -1 && hoveredPixel.y !== -1 && (
           <div
             style={{
-              position: 'absolute',
+              position: "absolute",
               left: `${offset.x + hoveredPixel.x * scale}px`,
               top: `${offset.y + hoveredPixel.y * scale}px`,
               width: `${scale}px`,
               height: `${scale}px`,
-              border: '1px solid black',
-              pointerEvents: 'none',
+              border: "1px solid black",
+              pointerEvents: "none",
             }}
           />
         )}
