@@ -11,6 +11,7 @@ const Canvas2 = () => {
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [startPan, setStartPan] = useState({ x: 0, y: 0 });
+  const [hoveredPixel, setHoveredPixel] = useState({ x: -1, y: -1 });
 
   const zoomIntensity = 0.1;
 
@@ -79,7 +80,6 @@ const Canvas2 = () => {
 
     const newScale = scale * zoom;
 
-
     setScale(newScale);
     setOffset((prevOffset) => ({
       x: offsetX - (offsetX - prevOffset.x) * zoom,
@@ -98,6 +98,16 @@ const Canvas2 = () => {
         x: e.clientX - startPan.x,
         y: e.clientY - startPan.y,
       });
+    }
+
+    const rect = containerRef.current.getBoundingClientRect();
+    const x = Math.floor((e.clientX - rect.left - offset.x) / scale);
+    const y = Math.floor((e.clientY - rect.top - offset.y) / scale);
+
+    if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasWidth) {
+      setHoveredPixel({ x, y });
+    } else {
+      setHoveredPixel({ x: -1, y: -1 });
     }
   };
 
@@ -131,6 +141,19 @@ const Canvas2 = () => {
             imageRendering: "pixelated",
           }}
         />
+        {hoveredPixel.x !== -1 && hoveredPixel.y !== -1 && (
+          <div
+            style={{
+              position: 'absolute',
+              left: `${offset.x + hoveredPixel.x * scale}px`,
+              top: `${offset.y + hoveredPixel.y * scale}px`,
+              width: `${scale}px`,
+              height: `${scale}px`,
+              border: '1px solid black',
+              pointerEvents: 'none',
+            }}
+          />
+        )}
       </div>
     </div>
   );
