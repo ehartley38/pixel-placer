@@ -3,12 +3,14 @@ import { axiosBinaryResInstance, axiosInstance } from "../../services/axios";
 import colourPalette from "../../utils/pallette";
 
 const canvasWidth = import.meta.env.VITE_CANVAS_WIDTH;
-const abgrPalette = colourPalette.map(([r, g, b, a]) => (a << 24) | (b << 16) | (g << 8) | r);
-
+const abgrPalette = colourPalette.map(
+  ([r, g, b, a]) => (a << 24) | (b << 16) | (g << 8) | r
+);
 
 const Canvas2 = () => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
+  const imageDataRef = useRef(null);
   const [scale, setScale] = useState(5);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -36,37 +38,28 @@ const Canvas2 = () => {
         canvas.height = canvasWidth;
 
         const imageData = context.createImageData(canvasWidth, canvasWidth);
-        const buffer = new ArrayBuffer(imageData.data.length)
-        const uint8Array = new Uint8ClampedArray(buffer)
-        const uint32Array = new Uint32Array(buffer)
-
+        const buffer = new ArrayBuffer(imageData.data.length);
+        const uint8Array = new Uint8ClampedArray(buffer);
+        const uint32Array = new Uint32Array(buffer);
 
         let pixelIndex = 0;
 
+        // Store the pixel colour in reverse-byte order (ABGR) so that bytes automatically fall in to the correct position when
+        // using the Uint8ClampedArray (uint8clampedarray is what the imagadata object expects)
+        // The uint8Array and uint32Array are just different views of the same underlying buffer.
+        // So when we write to uint32Array, we're actually modifying the data that uint8Array sees as well
         for (let i = 0; i < canvasState.length; i++) {
           const byte = canvasState[i];
           const firstColourIndex = (byte >> 4) & 0x0f;
           const secondColourIndex = byte & 0x0f;
 
-          uint32Array[pixelIndex++] = abgrPalette[firstColourIndex]
-          uint32Array[pixelIndex++] = abgrPalette[secondColourIndex]
-
-          // const colour1 = colourPalette[firstColourIndex];
-          // const colour2 = colourPalette[secondColourIndex];
-
-          // imageData.data[pixelIndex++] = colour1[0];
-          // imageData.data[pixelIndex++] = colour1[1];
-          // imageData.data[pixelIndex++] = colour1[2];
-          // imageData.data[pixelIndex++] = colour1[3];
-
-          // imageData.data[pixelIndex++] = colour2[0];
-          // imageData.data[pixelIndex++] = colour2[1];
-          // imageData.data[pixelIndex++] = colour2[2];
-          // imageData.data[pixelIndex++] = colour2[3];
+          uint32Array[pixelIndex++] = abgrPalette[firstColourIndex];
+          uint32Array[pixelIndex++] = abgrPalette[secondColourIndex];
         }
 
-        imageData.data.set(uint8Array)
+        imageData.data.set(uint8Array);
         context.putImageData(imageData, 0, 0);
+        imageDataRef.current = imageData;
       } catch (err) {
         console.error("Error fetching canvas state:", err);
       }
@@ -78,6 +71,34 @@ const Canvas2 = () => {
     const centreOffsetY = (window.innerHeight - canvasWidth * scale) / 2;
     setOffset({ x: centreOffsetX, y: centreOffsetY });
   }, []);
+
+  const updatePixel = async (x, y, colourIndex) => {
+    if (x < 0 || x >= canvasWidth || y < 0 || y >= canvasWidth) {
+      console.error("Pixel coordinates out of bounds");
+      return;
+    }
+
+    const canvas = canvasRef.current;
+    const context = canvas.getContext("2d");
+    const imageData = imageDataRef.current;
+
+    if (!imageData) {
+      console.error("ImageData not initialized");
+      return;
+    }
+
+    const index = (y * canvasWidth + x) * 4;
+    const uint32Array = new Uint32Array(imageData.data.buffer);
+    uint32Array[index / 4] = abgrPalette[colourIndex];
+
+    context.putImageData(imageData, 0, 0);
+
+    try {
+      await axiosInstance.post(`/set-pixel/${x}/${y}/${colourIndex}`);
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const handleWheel = (e) => {
     window.addEventListener("wheel", { passive: false });
@@ -138,7 +159,7 @@ const Canvas2 = () => {
 
       if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasWidth) {
         console.log(`Clicked on pixel: x=${x}, y=${y}`);
-
+        updatePixel(x, y, 0);
       }
     }
 
