@@ -80,6 +80,10 @@ const Canvas2 = () => {
 
     const newScale = scale * zoom;
 
+    console.log(newScale);
+    if (newScale < 2 || newScale > 50) return
+    
+
     setScale(newScale);
     setOffset((prevOffset) => ({
       x: offsetX - (offsetX - prevOffset.x) * zoom,
