@@ -119,7 +119,7 @@ const Canvas2 = () => {
     <div className="h-screen w-screen fixed flex items-center justify-center bg-white">
       <div
         ref={containerRef}
-        className="relative overflow-hidden h-screen w-screen"
+        className="relative overflow-hidden h-screen w-screen cursor-crosshair"
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
         onMouseMove={handleMouseMove}
