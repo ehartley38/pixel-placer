@@ -25,7 +25,6 @@ const Canvas2 = () => {
     const socket = connectSocket();
 
     socket.on("canvas-update", (data) => {
-      console.log("New pixel data:", data);
 
       const { x, y, colourIndex } = data;
       updatePixelFromSocket(x, y, colourIndex);
@@ -107,6 +106,7 @@ const Canvas2 = () => {
     updateImageData(x, y, colourIndex);
   };
 
+  // TODO - Move the drawing to a requestAnimationFrame loop
   const updateImageData = (x, y, colourIndex) => {
     if (x < 0 || x >= canvasWidth || y < 0 || y >= canvasWidth) {
       console.error("Pixel coordinates out of bounds");
