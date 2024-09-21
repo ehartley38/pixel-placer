@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from "react";
 import { axiosBinaryResInstance, axiosInstance } from "../../services/axios";
 import colourPalette from "../../utils/pallette";
 import { connectSocket, getSocket } from "../../services/socket";
+import ColourPicker from "./ColourPicker";
 
 const canvasWidth = import.meta.env.VITE_CANVAS_WIDTH;
 const abgrPalette = colourPalette.map(
@@ -25,7 +26,6 @@ const Canvas2 = () => {
     const socket = connectSocket();
 
     socket.on("canvas-update", (data) => {
-
       const { x, y, colourIndex } = data;
       updatePixelFromSocket(x, y, colourIndex);
     });
@@ -196,46 +196,49 @@ const Canvas2 = () => {
   };
 
   return (
-    <div className="h-screen w-screen fixed flex items-center justify-center bg-white">
-      <div
-        ref={containerRef}
-        className="relative overflow-hidden h-screen w-screen cursor-crosshair"
-        onWheel={handleWheel}
-        onMouseDown={handleMouseDown}
-        onMouseMove={handleMouseMove}
-        onMouseUp={handleMouseUp}
-        onMouseLeave={handleMouseUp}
-      >
-        <canvas
-          id="canvas"
-          ref={canvasRef}
-          width={canvasWidth}
-          height={canvasWidth}
-          style={{
-            border: "1px solid black",
-            position: "absolute",
-            left: `${offset.x}px`,
-            top: `${offset.y}px`,
-            width: `${canvasWidth * scale}px`,
-            height: `${canvasWidth * scale}px`,
-            imageRendering: "pixelated",
-          }}
-        />
-        {hoveredPixel.x !== -1 && hoveredPixel.y !== -1 && (
-          <div
+    <>
+      <div className="h-screen w-screen fixed flex items-center justify-center bg-white">
+        <div
+          ref={containerRef}
+          className="relative overflow-hidden h-screen w-screen cursor-crosshair"
+          onWheel={handleWheel}
+          onMouseDown={handleMouseDown}
+          onMouseMove={handleMouseMove}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+        >
+          <canvas
+            id="canvas"
+            ref={canvasRef}
+            width={canvasWidth}
+            height={canvasWidth}
             style={{
-              position: "absolute",
-              left: `${offset.x + hoveredPixel.x * scale}px`,
-              top: `${offset.y + hoveredPixel.y * scale}px`,
-              width: `${scale}px`,
-              height: `${scale}px`,
               border: "1px solid black",
-              pointerEvents: "none",
+              position: "absolute",
+              left: `${offset.x}px`,
+              top: `${offset.y}px`,
+              width: `${canvasWidth * scale}px`,
+              height: `${canvasWidth * scale}px`,
+              imageRendering: "pixelated",
             }}
           />
-        )}
+          {hoveredPixel.x !== -1 && hoveredPixel.y !== -1 && (
+            <div
+              style={{
+                position: "absolute",
+                left: `${offset.x + hoveredPixel.x * scale}px`,
+                top: `${offset.y + hoveredPixel.y * scale}px`,
+                width: `${scale}px`,
+                height: `${scale}px`,
+                border: "1px solid black",
+                pointerEvents: "none",
+              }}
+            />
+          )}
+        </div>
       </div>
-    </div>
+      <ColourPicker />
+    </>
   );
 };
 
