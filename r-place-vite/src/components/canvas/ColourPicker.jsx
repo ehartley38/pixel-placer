@@ -31,10 +31,10 @@ const ColourPicker = ({ setActiveColour }) => {
   };
 
   return (
-    <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-3/5 bg-transparent mb-6 py-4 rounded-lg">
+    <div className="flex justify-center fixed bottom-0  w-full bg-transparent mb-6">
       <div
         ref={ref}
-        className="flex overflow-x-auto space-x-4 pb-2 cursor-grab active:cursor-grabbing"
+        className="flex overflow-x-auto space-x-4 p-1 cursor-grab active:cursor-grabbing"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         {...events}
       >
