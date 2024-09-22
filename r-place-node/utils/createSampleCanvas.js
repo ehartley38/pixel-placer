@@ -9,7 +9,7 @@ const createCanvas = async () => {
 
   for (let x = 0; x < canvasWidth; x++) {
     for (let y = 0; y < canvasWidth; y++) {
-      const randomColour = Math.floor(Math.random() * 15)
+      const randomColour = Math.floor(Math.random() * 31)
 
       await setPixelColour(x, y, randomColour);
     }
@@ -20,7 +20,7 @@ const createCanvas = async () => {
 
 const setPixelColour = async (x, y, colour) => {
   const offset = (y * canvasWidth + x);
-  await redis.bitfield("canvas_bitmap", "SET", "u4", `#${offset}`, colour)
+  await redis.bitfield("canvas_bitmap", "SET", "u8", `#${offset}`, colour)
 };
 
 try {

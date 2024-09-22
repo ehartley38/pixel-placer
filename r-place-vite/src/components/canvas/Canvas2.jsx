@@ -6,7 +6,6 @@ import ColourPicker from "./ColourPicker";
 import SelectedColour from "./SelectedColour";
 
 const canvasWidth = import.meta.env.VITE_CANVAS_WIDTH;
-console.log(canvasWidth);
 
 const abgrPalette = colourPalette.map(
   ([r, g, b, a]) => (a << 24) | (b << 16) | (g << 8) | r
@@ -58,6 +57,7 @@ const Canvas2 = () => {
         );
 
         const canvasState = new Uint8Array(canvasStateResponse.data);
+
         const canvas = canvasRef.current;
         const context = canvas.getContext("2d");
 
@@ -76,12 +76,9 @@ const Canvas2 = () => {
         // The uint8Array and uint32Array are just different views of the same underlying buffer.
         // So when we write to uint32Array, we're actually modifying the data that uint8Array sees as well
         for (let i = 0; i < canvasState.length; i++) {
-          const byte = canvasState[i];
-          const firstColourIndex = (byte >> 4) & 0x0f;
-          const secondColourIndex = byte & 0x0f;
+          const colourIndex = canvasState[i];
 
-          uint32Array[pixelIndex++] = abgrPalette[firstColourIndex];
-          uint32Array[pixelIndex++] = abgrPalette[secondColourIndex];
+          uint32Array[pixelIndex++] = abgrPalette[colourIndex];
         }
 
         imageData.data.set(uint8Array);

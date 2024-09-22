@@ -13,7 +13,7 @@ export const getPixelColour = async (x, y) => {
   const redis = new Redis({});
 
   const offset = y * canvasWidth + x;
-  const [colour] = await redis.bitfield("canvas_bitmap", "GET", "u4", `#${offset}`);
+  const [colour] = await redis.bitfield("canvas_bitmap", "GET", "u8", `#${offset}`);
 
   await redis.quit();
 
