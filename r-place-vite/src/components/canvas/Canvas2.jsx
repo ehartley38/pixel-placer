@@ -10,11 +10,14 @@ const abgrPalette = colourPalette.map(
   ([r, g, b, a]) => (a << 24) | (b << 16) | (g << 8) | r
 );
 const dragThreshold = 10;
+const zoomIntensity = 0.1;
 
 const Canvas2 = () => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const imageDataRef = useRef(null);
+  const updateQueueRef = useRef([]);
+
   const [scale, setScale] = useState(5);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -24,14 +27,12 @@ const Canvas2 = () => {
   const [activeColour, setActiveColour] = useState(0);
   const [initialClickPos, setInitialClickPos] = useState({ x: 0, y: 0 });
 
-  const zoomIntensity = 0.1;
-
   useEffect(() => {
     const socket = connectSocket();
 
     socket.on("canvas-update", (data) => {
       const { x, y, colourIndex } = data;
-      updatePixelFromSocket(x, y, colourIndex);
+      updateQueueRef.current.push({ x, y, colourIndex });
     });
 
     return () => {
@@ -43,6 +44,8 @@ const Canvas2 = () => {
   }, []);
 
   useEffect(() => {
+    imageDataRef.current = new ImageData(canvasWidth, canvasWidth);
+
     const fetchCanvasState = async () => {
       try {
         const canvasStateResponse = await axiosBinaryResInstance.get(
@@ -89,15 +92,40 @@ const Canvas2 = () => {
 
     fetchCanvasState();
 
+    const renderLoop = () => {
+      const canvas = canvasRef.current;
+      const context = canvas.getContext("2d");
+      const imageData = imageDataRef.current;
+      if (!imageData || !context) return;
+
+      const updates = updateQueueRef.current.splice(0);
+
+      if (updates.length > 0) {
+        updates.forEach(({ x, y, colourIndex }) => {
+          const index = (y * canvasWidth + x) * 4;
+          const uint32Array = new Uint32Array(imageData.data.buffer);
+          uint32Array[index / 4] = abgrPalette[colourIndex];
+        });
+        context.putImageData(imageData, 0, 0);
+      }
+
+      requestAnimationFrame(renderLoop);
+    };
+
+    requestAnimationFrame(renderLoop);
+
     const centreOffsetX = (window.innerWidth - canvasWidth * scale) / 2;
     const centreOffsetY = (window.innerHeight - canvasWidth * scale) / 2;
     setOffset({ x: centreOffsetX, y: centreOffsetY });
   }, []);
 
-  useEffect(() => {}, [activeColour]);
-
   const updatePixel = async (x, y, colourIndex) => {
-    updateImageData(x, y, colourIndex);
+    if (x < 0 || x >= canvasWidth || y < 0 || y >= canvasWidth) {
+      console.error("Pixel coordinates out of bounds");
+      return;
+    }
+
+    updateQueueRef.current.push({ x, y, colourIndex });
 
     try {
       await axiosInstance.post(`/set-pixel/${x}/${y}/${colourIndex}`);
@@ -106,33 +134,6 @@ const Canvas2 = () => {
     } catch (err) {
       console.error(err);
     }
-  };
-
-  const updatePixelFromSocket = (x, y, colourIndex) => {
-    updateImageData(x, y, colourIndex);
-  };
-
-  // TODO - Move the drawing to a requestAnimationFrame loop
-  const updateImageData = (x, y, colourIndex) => {
-    if (x < 0 || x >= canvasWidth || y < 0 || y >= canvasWidth) {
-      console.error("Pixel coordinates out of bounds");
-      return;
-    }
-
-    const canvas = canvasRef.current;
-    const context = canvas.getContext("2d");
-    const imageData = imageDataRef.current;
-
-    if (!imageData) {
-      console.error("ImageData not initialized");
-      return;
-    }
-
-    const index = (y * canvasWidth + x) * 4;
-    const uint32Array = new Uint32Array(imageData.data.buffer);
-    uint32Array[index / 4] = abgrPalette[colourIndex];
-
-    context.putImageData(imageData, 0, 0);
   };
 
   const handleWheel = (e) => {
