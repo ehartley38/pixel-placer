@@ -9,6 +9,7 @@ const canvasWidth = import.meta.env.VITE_CANVAS_WIDTH;
 const abgrPalette = colourPalette.map(
   ([r, g, b, a]) => (a << 24) | (b << 16) | (g << 8) | r
 );
+const dragThreshold = 10;
 
 const Canvas2 = () => {
   const canvasRef = useRef(null);
@@ -21,6 +22,7 @@ const Canvas2 = () => {
   const [startPan, setStartPan] = useState({ x: 0, y: 0 });
   const [hoveredPixel, setHoveredPixel] = useState({ x: -1, y: -1 });
   const [activeColour, setActiveColour] = useState(0);
+  const [initialClickPos, setInitialClickPos] = useState({ x: 0, y: 0 });
 
   const zoomIntensity = 0.1;
 
@@ -158,12 +160,19 @@ const Canvas2 = () => {
   const handleMouseDown = (e) => {
     setIsClick(true);
     setStartPan({ x: e.clientX - offset.x, y: e.clientY - offset.y });
+    setInitialClickPos({ x: e.clientX, y: e.clientY });
   };
 
   const handleMouseMove = (e) => {
     if (isClick) {
-      setIsDragging(true);
-      setIsClick(false);
+      const dx = e.clientX - initialClickPos.x;
+      const dy = e.clientY - initialClickPos.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      if (distance > dragThreshold) {
+        setIsDragging(true);
+        setIsClick(false);
+      }
     }
 
     if (isDragging) {
@@ -239,8 +248,7 @@ const Canvas2 = () => {
               }}
             />
           )}
-          <SelectedColour activeColour={activeColour}/>
-          {/* {hoveredPixel.x !== -1 && hoveredPixel.y !== -1 && <SelectedColour />} */}
+          <SelectedColour activeColour={activeColour} />
         </div>
       </div>
       <ColourPicker setActiveColour={setActiveColour} />
