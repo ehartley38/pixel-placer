@@ -3,6 +3,7 @@ import { axiosBinaryResInstance, axiosInstance } from "../../services/axios";
 import colourPalette from "../../utils/pallette";
 import { connectSocket, getSocket } from "../../services/socket";
 import ColourPicker from "./ColourPicker";
+import SelectedColour from "./SelectedColour";
 
 const canvasWidth = import.meta.env.VITE_CANVAS_WIDTH;
 const abgrPalette = colourPalette.map(
@@ -19,7 +20,7 @@ const Canvas2 = () => {
   const [isClick, setIsClick] = useState(false);
   const [startPan, setStartPan] = useState({ x: 0, y: 0 });
   const [hoveredPixel, setHoveredPixel] = useState({ x: -1, y: -1 });
-  const [activeColour, setActiveColour] = useState()
+  const [activeColour, setActiveColour] = useState(0);
 
   const zoomIntensity = 0.1;
 
@@ -91,9 +92,7 @@ const Canvas2 = () => {
     setOffset({ x: centreOffsetX, y: centreOffsetY });
   }, []);
 
-  useEffect(() => {
-
-  }, [activeColour])
+  useEffect(() => {}, [activeColour]);
 
   const updatePixel = async (x, y, colourIndex) => {
     updateImageData(x, y, colourIndex);
@@ -240,22 +239,11 @@ const Canvas2 = () => {
               }}
             />
           )}
-          {/* {hoveredPixel.x !== -1 && hoveredPixel.y !== -1 && (
-            <div
-              style={{
-                position: "absolute",
-                left: `${offset.x + hoveredPixel.x * scale + 20}px`,
-                top: `${offset.y + hoveredPixel.y * scale + 20}px`,
-                width: `${scale}px`,
-                height: `${scale}px`,
-                border: "1px solid black",
-                pointerEvents: "none",
-              }}
-            />
-          )} */}
+          <SelectedColour activeColour={activeColour}/>
+          {/* {hoveredPixel.x !== -1 && hoveredPixel.y !== -1 && <SelectedColour />} */}
         </div>
       </div>
-      <ColourPicker setActiveColour={setActiveColour}/>
+      <ColourPicker setActiveColour={setActiveColour} />
     </>
   );
 };
