@@ -1,7 +1,6 @@
 import Redis from "ioredis";
 
 const canvasWidth = process.env.CANVAS_WIDTH || 100
-console.log(canvasWidth);
 
 const redis = new Redis({});
 

@@ -6,6 +6,8 @@ import ColourPicker from "./ColourPicker";
 import SelectedColour from "./SelectedColour";
 
 const canvasWidth = import.meta.env.VITE_CANVAS_WIDTH;
+console.log(canvasWidth);
+
 const abgrPalette = colourPalette.map(
   ([r, g, b, a]) => (a << 24) | (b << 16) | (g << 8) | r
 );

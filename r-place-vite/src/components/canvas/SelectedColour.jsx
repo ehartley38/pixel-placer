@@ -20,8 +20,8 @@ const SelectedColour = ({activeColour}) => {
     <div
       style={{
         position: "fixed",
-        left: `${position.x}px`,
-        top: `${position.y}px`,
+        left: `${position.x + 3}px`,
+        top: `${position.y + 3}px`,
         width: "20px",
         height: "20px",
         backgroundColor: `rgba(${colourPalette[activeColour].join(",")})`,
