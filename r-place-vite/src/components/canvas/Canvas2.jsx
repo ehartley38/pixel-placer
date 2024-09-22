@@ -251,7 +251,7 @@ const Canvas2 = () => {
           <SelectedColour activeColour={activeColour} />
         </div>
       </div>
-      <ColourPicker setActiveColour={setActiveColour} />
+      <ColourPicker activeColour={activeColour} setActiveColour={setActiveColour} />
     </>
   );
 };

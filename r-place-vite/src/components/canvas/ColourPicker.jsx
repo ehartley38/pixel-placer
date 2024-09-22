@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from "react";
 import { useDraggable } from "react-use-draggable-scroll";
 import colourPalette from "../../utils/pallette";
 
-const ColourPicker = ({ setActiveColour }) => {
+const ColourPicker = ({ activeColour, setActiveColour }) => {
   const ref = useRef(null);
   const { events } = useDraggable(ref);
 
@@ -34,7 +34,7 @@ const ColourPicker = ({ setActiveColour }) => {
     <div className="flex justify-center fixed bottom-0  w-full bg-transparent mb-6">
       <div
         ref={ref}
-        className="flex overflow-x-auto space-x-4 p-1 cursor-grab active:cursor-grabbing"
+        className="flex overflow-x-auto space-x-4 p-1 mx-10 cursor-grab active:cursor-grabbing"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
         {...events}
       >
@@ -44,7 +44,7 @@ const ColourPicker = ({ setActiveColour }) => {
             className="w-9 h-9 rounded-full cursor-pointer hover:scale-110 transition-transform duration-200 flex-shrink-0 my-1"
             style={{
               backgroundColor: `rgba(${colour.join(",")})`,
-              border: "2px solid #C5C5C5",
+              border: `2px solid ${index === activeColour ? '#42afed' : '#C5C5C5'}`,
             }}
             onClick={() => handleColourSelect(index)}
           />
