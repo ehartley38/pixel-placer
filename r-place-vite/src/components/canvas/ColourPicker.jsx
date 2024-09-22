@@ -2,7 +2,7 @@ import React, { useRef, useEffect } from "react";
 import { useDraggable } from "react-use-draggable-scroll";
 import colourPalette from "../../utils/pallette";
 
-const ColourPicker = () => {
+const ColourPicker = ({ setActiveColour }) => {
   const ref = useRef(null);
   const { events } = useDraggable(ref);
 
@@ -26,6 +26,10 @@ const ColourPicker = () => {
     };
   }, []);
 
+  const handleColourSelect = (index) => {
+    setActiveColour(index);
+  };
+
   return (
     <div className="fixed bottom-0 left-1/2 transform -translate-x-1/2 w-3/5 bg-transparent mb-6 py-4 rounded-lg">
       <div
@@ -42,6 +46,7 @@ const ColourPicker = () => {
               backgroundColor: `rgba(${colour.join(",")})`,
               border: "2px solid #C5C5C5",
             }}
+            onClick={() => handleColourSelect(index)}
           />
         ))}
       </div>

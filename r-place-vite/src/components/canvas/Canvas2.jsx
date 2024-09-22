@@ -19,6 +19,7 @@ const Canvas2 = () => {
   const [isClick, setIsClick] = useState(false);
   const [startPan, setStartPan] = useState({ x: 0, y: 0 });
   const [hoveredPixel, setHoveredPixel] = useState({ x: -1, y: -1 });
+  const [activeColour, setActiveColour] = useState()
 
   const zoomIntensity = 0.1;
 
@@ -89,6 +90,10 @@ const Canvas2 = () => {
     const centreOffsetY = (window.innerHeight - canvasWidth * scale) / 2;
     setOffset({ x: centreOffsetX, y: centreOffsetY });
   }, []);
+
+  useEffect(() => {
+
+  }, [activeColour])
 
   const updatePixel = async (x, y, colourIndex) => {
     updateImageData(x, y, colourIndex);
@@ -187,7 +192,7 @@ const Canvas2 = () => {
       const y = Math.floor((e.clientY - rect.top - offset.y) / scale);
 
       if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasWidth) {
-        updatePixel(x, y, 0);
+        updatePixel(x, y, activeColour);
       }
     }
 
@@ -235,9 +240,22 @@ const Canvas2 = () => {
               }}
             />
           )}
+          {/* {hoveredPixel.x !== -1 && hoveredPixel.y !== -1 && (
+            <div
+              style={{
+                position: "absolute",
+                left: `${offset.x + hoveredPixel.x * scale + 20}px`,
+                top: `${offset.y + hoveredPixel.y * scale + 20}px`,
+                width: `${scale}px`,
+                height: `${scale}px`,
+                border: "1px solid black",
+                pointerEvents: "none",
+              }}
+            />
+          )} */}
         </div>
       </div>
-      <ColourPicker />
+      <ColourPicker setActiveColour={setActiveColour}/>
     </>
   );
 };
