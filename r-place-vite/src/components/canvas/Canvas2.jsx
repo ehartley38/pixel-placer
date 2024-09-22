@@ -13,7 +13,7 @@ const abgrPalette = colourPalette.map(
 const dragThreshold = 10;
 const zoomIntensity = 0.1;
 
-const Canvas2 = () => {
+const Canvas2 = ({session}) => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const imageDataRef = useRef(null);

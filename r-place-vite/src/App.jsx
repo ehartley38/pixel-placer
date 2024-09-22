@@ -1,51 +1,43 @@
 import { useEffect, useState } from "react";
-// import "./App.css";
 import { supabase } from "./services/supabaseClient";
 import Auth from "./components/auth/Auth";
 import Account from "./components/profile/Account";
-import Canvas from "./components/canvas/Canvas";
-import { Route, Routes } from "react-router-dom";
-import { axiosInstance } from "./services/axios";
 import Canvas2 from "./components/canvas/Canvas2";
+import { Route, Routes } from "react-router-dom";
+import ProtectedRoute from "./components/auth/ProtectedRoute";
 
 function App() {
-  const [count, setCount] = useState(0);
   const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      setLoading(false);
     });
 
-    supabase.auth.onAuthStateChange((_event, session) => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      setLoading(false);
     });
+
+    return () => subscription.unsubscribe();
   }, []);
 
-  const testRequest = async () => {
-    try {
-      const test = await axiosInstance.get("/test");
-
-      setCount(test.data.msg);
-    } catch (err) {
-      console.log(err);
-    }
-  };
-
-  if (!session) return <Auth />;
+  if (loading) {
+    return <div>Loading...</div>; // Or a loading spinner
+  }
 
   return (
-    <>
-      <Routes>
-        {/* <Route path="/" element={<Canvas session={session}/>} /> */}
-        <Route path="/" element={<Canvas2/>} />
-
-        <Route
-          path="/Account"
-          element={<Account key={session.user.id} session={session} />}
-        />
-      </Routes>
-    </>
+    <Routes>
+      <Route path="/" element={<Canvas2 session={session} />} />
+      <Route path="/login" element={<Auth />} />
+      <Route element={<ProtectedRoute session={session} />}>
+        <Route path="/account" element={<Account session={session} />} />
+      </Route>
+    </Routes>
   );
 }
 
