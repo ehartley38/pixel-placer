@@ -15,6 +15,7 @@ const abgrPalette = colourPalette.map(
 );
 const dragThreshold = 10;
 const zoomIntensity = 0.1;
+const arrowKeyStep = 10;
 
 const Canvas2 = ({session}) => {
   const canvasRef = useRef(null);
@@ -38,6 +39,7 @@ const Canvas2 = ({session}) => {
       const { x, y, colourIndex } = data;
       updateQueueRef.current.push({ x, y, colourIndex });
     });
+
 
     return () => {
       // Clean up on unmount
@@ -119,6 +121,9 @@ const Canvas2 = ({session}) => {
     const centreOffsetX = (window.innerWidth - canvasWidth * scale) / 2;
     const centreOffsetY = (window.innerHeight - canvasWidth * scale) / 2;
     setOffset({ x: centreOffsetX, y: centreOffsetY });
+
+    window.addEventListener('keydown', handleKeyDown);
+
   }, []);
 
   const updatePixel = async (x, y, colourIndex) => {
@@ -137,6 +142,23 @@ const Canvas2 = ({session}) => {
       console.error(err);
     }
   };
+
+  const handleKeyDown = useCallback((e) => {
+    switch(e.key) {
+      case 'ArrowUp':
+        setOffset(prev => ({ ...prev, y: prev.y + arrowKeyStep }));
+        break;
+      case 'ArrowDown':
+        setOffset(prev => ({ ...prev, y: prev.y - arrowKeyStep }));
+        break;
+      case 'ArrowLeft':
+        setOffset(prev => ({ ...prev, x: prev.x + arrowKeyStep }));
+        break;
+      case 'ArrowRight':
+        setOffset(prev => ({ ...prev, x: prev.x - arrowKeyStep }));
+        break;
+    }
+  }, []);
 
   const handleWheel = (e) => {
     window.addEventListener("wheel", { passive: false });
@@ -222,6 +244,8 @@ const Canvas2 = ({session}) => {
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
+          tabIndex={0}
+          onKeyDown={handleKeyDown}
         >
           <canvas
             id="canvas"
