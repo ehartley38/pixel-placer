@@ -5,7 +5,10 @@ import { connectSocket, getSocket } from "../../services/socket";
 import ColourPicker from "./ColourPicker";
 import SelectedColour from "./SelectedColour";
 
-const canvasWidth = import.meta.env.VITE_CANVAS_WIDTH;
+// const canvasWidth = import.meta.env.VITE_CANVAS_WIDTH;
+// console.log(canvasWidth);
+const canvasWidth = 1000
+
 
 const abgrPalette = colourPalette.map(
   ([r, g, b, a]) => (a << 24) | (b << 16) | (g << 8) | r
@@ -19,7 +22,7 @@ const Canvas2 = ({session}) => {
   const imageDataRef = useRef(null);
   const updateQueueRef = useRef([]);
 
-  const [scale, setScale] = useState(5);
+  const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [isClick, setIsClick] = useState(false);
@@ -148,7 +151,7 @@ const Canvas2 = ({session}) => {
 
     const newScale = scale * zoom;
 
-    if (newScale < 2 || newScale > 50) return;
+    if (newScale < 0.5 || newScale > 50) return;
 
     setScale(newScale);
     setOffset((prevOffset) => ({
