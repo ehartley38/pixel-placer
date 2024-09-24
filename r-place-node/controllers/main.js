@@ -4,6 +4,7 @@ import Redis from "ioredis";
 import { setPixelColour } from "../utils/setPixelColour.js";
 import { getPixelColour } from "../utils/getPixelColour.js";
 import { getCanvasState } from "../utils/getCanvasState.js";
+import { supabaseMiddleware } from "../middleware/supabaseMiddleware.js";
 
 const canvasWidth = process.env.CANVAS_WIDTH;
 
@@ -33,18 +34,22 @@ mainRouter.get("/get-pixel/:xCoord/:yCoord", async (req, res) => {
   }
 });
 
-mainRouter.post("/set-pixel/:xCoord/:yCoord/:colour", async (req, res) => {
-  const x = parseInt(req.params.xCoord);
-  const y = parseInt(req.params.yCoord);
-  const colour = req.params.colour;
+mainRouter.post(
+  "/set-pixel/:xCoord/:yCoord/:colour",
+  supabaseMiddleware,
+  async (req, res) => {
+    const x = parseInt(req.params.xCoord);
+    const y = parseInt(req.params.yCoord);
+    const colour = req.params.colour;
 
-  try {
-    await setPixelColour(x, y, colour);
-  } catch (err) {
-    console.log(err);
+    try {
+      await setPixelColour(x, y, colour);
+    } catch (err) {
+      console.log(err);
+    }
+
+    return res.status(200).json({ msg: "Pixel set" });
   }
-
-  return res.status(200).json({ msg: "Pixel set" });
-});
+);
 
 export default mainRouter;
