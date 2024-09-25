@@ -7,8 +7,7 @@ import SelectedColour from "./SelectedColour";
 
 // const canvasWidth = import.meta.env.VITE_CANVAS_WIDTH;
 // console.log(canvasWidth);
-const canvasWidth = 1000
-
+const canvasWidth = 1000;
 
 const abgrPalette = colourPalette.map(
   ([r, g, b, a]) => (a << 24) | (b << 16) | (g << 8) | r
@@ -17,7 +16,7 @@ const dragThreshold = 10;
 const zoomIntensity = 0.1;
 const arrowKeyStep = 10;
 
-const Canvas2 = ({session}) => {
+const Canvas2 = ({ session }) => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const imageDataRef = useRef(null);
@@ -39,7 +38,6 @@ const Canvas2 = ({session}) => {
       const { x, y, colourIndex } = data;
       updateQueueRef.current.push({ x, y, colourIndex });
     });
-
 
     return () => {
       // Clean up on unmount
@@ -122,8 +120,7 @@ const Canvas2 = ({session}) => {
     const centreOffsetY = (window.innerHeight - canvasWidth * scale) / 2;
     setOffset({ x: centreOffsetX, y: centreOffsetY });
 
-    window.addEventListener('keydown', handleKeyDown);
-
+    window.addEventListener("keydown", handleKeyDown);
   }, []);
 
   const updatePixel = async (x, y, colourIndex) => {
@@ -132,30 +129,43 @@ const Canvas2 = ({session}) => {
       return;
     }
 
-    updateQueueRef.current.push({ x, y, colourIndex });
-
     try {
-      await axiosInstance.post(`/set-pixel/${x}/${y}/${colourIndex}`);
-      const socket = getSocket();
-      socket.emit("pixel-update", { x, y, colourIndex });
+      const res = await axiosInstance.post(
+        `/set-pixel/${x}/${y}/${colourIndex}`
+      );
+
+      if (res.status == 200) {
+        updateQueueRef.current.push({ x, y, colourIndex });
+        const socket = getSocket();
+        console.log(socket);
+        
+        socket.emit("pixel-update", { x, y, colourIndex });
+
+      } else if (res.status == 401) {
+        // TODO - Display Login
+        return;
+      } else {
+        // TODO - Display error message
+        return;
+      }
     } catch (err) {
       console.error(err);
     }
   };
 
   const handleKeyDown = useCallback((e) => {
-    switch(e.key) {
-      case 'ArrowUp':
-        setOffset(prev => ({ ...prev, y: prev.y + arrowKeyStep }));
+    switch (e.key) {
+      case "ArrowUp":
+        setOffset((prev) => ({ ...prev, y: prev.y + arrowKeyStep }));
         break;
-      case 'ArrowDown':
-        setOffset(prev => ({ ...prev, y: prev.y - arrowKeyStep }));
+      case "ArrowDown":
+        setOffset((prev) => ({ ...prev, y: prev.y - arrowKeyStep }));
         break;
-      case 'ArrowLeft':
-        setOffset(prev => ({ ...prev, x: prev.x + arrowKeyStep }));
+      case "ArrowLeft":
+        setOffset((prev) => ({ ...prev, x: prev.x + arrowKeyStep }));
         break;
-      case 'ArrowRight':
-        setOffset(prev => ({ ...prev, x: prev.x - arrowKeyStep }));
+      case "ArrowRight":
+        setOffset((prev) => ({ ...prev, x: prev.x - arrowKeyStep }));
         break;
     }
   }, []);
@@ -278,7 +288,10 @@ const Canvas2 = ({session}) => {
           <SelectedColour activeColour={activeColour} />
         </div>
       </div>
-      <ColourPicker activeColour={activeColour} setActiveColour={setActiveColour} />
+      <ColourPicker
+        activeColour={activeColour}
+        setActiveColour={setActiveColour}
+      />
     </>
   );
 };

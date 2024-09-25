@@ -16,10 +16,9 @@ const io = new SocketIOServer(server, {
 
 
 io.on('connection', (socket) => {
-  console.log('A user connected:', socket.id);
+  console.log('A userASD connected:', socket.id);
   
   socket.on("pixel-update", (data) => {
-    // console.log("Pixel update received:", data);
     io.emit("canvas-update", data);
   });
 

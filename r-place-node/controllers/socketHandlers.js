@@ -3,6 +3,7 @@ export const registerSocketEvents = (io) => {
     console.log("A user connected:", socket.id);
 
     socket.on("pixel-update", (data) => {
+      
       console.log("Pixel update received:", data);
       io.emit("canvas-update", data);
     });

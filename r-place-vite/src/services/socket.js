@@ -17,8 +17,6 @@ export const connectSocket = () => {
     socket.on("disconnect", () => {
       console.log("Disconnected from socket.io server");
     });
-
-    
   }
 
   return socket;

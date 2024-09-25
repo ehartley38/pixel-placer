@@ -23,9 +23,11 @@ export const supabaseMiddleware = async (req, res, next) => {
 
 
   if (!user) {
-    return res.status(401).json(error);
+    return res.status(401).json({Error: "No user found"});
   }
 
+  // TODO - Put more thought into this. Apply it to the relevant routes. Figure out if 
+  // The service key is the right thing to use
 //   req.user = user;
 //   await supabase.auth.setAuth(jwt);
 
