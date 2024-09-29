@@ -22,17 +22,30 @@ mainRouter.get("/get-canvas", async (req, res) => {
   return res.status(201).send(buffer);
 });
 
+// Get pixel metadata
 mainRouter.get(
   "/get-pixel/:xCoord/:yCoord",
   supabaseMiddleware,
   async (req, res) => {
+    console.log("Getting pixel");
+
     const x = parseInt(req.params.xCoord);
     const y = parseInt(req.params.yCoord);
 
     try {
-      const colour = await getPixelColour(x, y);
+      // const colour = await getPixelColour(x, y);
 
-      return res.status(200).json({ msg: colour });
+      const { data, error } = await supabase
+        .from("canvas_metadata")
+        .select(`*, createdBy(username)`)
+        .eq("xPos", x)
+        .eq("yPos", y);
+
+      if (!error) {
+        return res.status(200).json({ data: data });
+      } else {
+        return res.status(400).json({ err: error });
+      }
     } catch (err) {
       console.log(err);
     }

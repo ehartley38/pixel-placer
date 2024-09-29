@@ -4,6 +4,7 @@ import colourPalette from "../../utils/pallette";
 import { connectSocket, getSocket } from "../../services/socket";
 import ColourPicker from "./ColourPicker";
 import SelectedColour from "./SelectedColour";
+import { PixelMetadata } from "./PixelMetadata";
 
 // const canvasWidth = import.meta.env.VITE_CANVAS_WIDTH;
 // console.log(canvasWidth);
@@ -21,6 +22,7 @@ const Canvas2 = ({ session }) => {
   const containerRef = useRef(null);
   const imageDataRef = useRef(null);
   const updateQueueRef = useRef([]);
+  const hoverTimerRef = useRef(null);
 
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -30,6 +32,8 @@ const Canvas2 = ({ session }) => {
   const [hoveredPixel, setHoveredPixel] = useState({ x: -1, y: -1 });
   const [activeColour, setActiveColour] = useState(0);
   const [initialClickPos, setInitialClickPos] = useState({ x: 0, y: 0 });
+  const [showMetadata, setShowMetadata] = useState(false);
+  const [pixelMetadata, setPixelMetadata] = useState(null);
 
   useEffect(() => {
     const socket = connectSocket();
@@ -137,9 +141,8 @@ const Canvas2 = ({ session }) => {
       if (res.status == 200) {
         updateQueueRef.current.push({ x, y, colourIndex });
         const socket = getSocket();
-        
-        socket.emit("pixel-update", { x, y, colourIndex });
 
+        socket.emit("pixel-update", { x, y, colourIndex });
       } else if (res.status == 401) {
         // TODO - Display Login
         return;
@@ -222,8 +225,24 @@ const Canvas2 = ({ session }) => {
 
     if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasWidth) {
       setHoveredPixel({ x, y });
+      clearTimeout(hoverTimerRef.current);
+      setShowMetadata(false);
+
+      hoverTimerRef.current = setTimeout(async () => {
+        try {
+          const res = await axiosInstance.get(`/get-pixel/${x}/${y}`);
+          const metadata = res.data.data[0]
+          
+          setPixelMetadata(metadata)
+          setShowMetadata(true);
+        } catch (err) {
+          console.log(err);
+        }
+      }, 500);
     } else {
       setHoveredPixel({ x: -1, y: -1 });
+      setShowMetadata(false);
+      clearTimeout(hoverTimerRef);
     }
   };
 
@@ -283,6 +302,9 @@ const Canvas2 = ({ session }) => {
                 pointerEvents: "none",
               }}
             />
+          )}
+          {showMetadata && pixelMetadata && hoveredPixel.x !== -1 && hoveredPixel.y !== -1 && (
+            <PixelMetadata hoveredPixel={hoveredPixel} pixelMetadata={pixelMetadata}/>
           )}
           <SelectedColour activeColour={activeColour} />
         </div>
