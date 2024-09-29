@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import colourPalette from "../../utils/pallette";
 
 export const PixelMetadata = ({ pixelMetadata }) => {

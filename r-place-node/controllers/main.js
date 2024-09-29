@@ -67,7 +67,7 @@ mainRouter.post(
         xPos: x,
         yPos: y,
         colour: colour,
-        createdBy: user.id,
+        createdBy: user.sub,
         createdDate: formatDate(Date.now()),
       });
 

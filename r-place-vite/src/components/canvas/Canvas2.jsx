@@ -10,7 +10,6 @@ import { Coordinates } from "./Coordinates";
 // const canvasWidth = import.meta.env.VITE_CANVAS_WIDTH;
 const canvasWidth = 1000;
 
-
 const abgrPalette = colourPalette.map(({ rgba }) => {
   const [r, g, b, a] = rgba;
   return (a << 24) | (b << 16) | (g << 8) | r;
@@ -37,6 +36,7 @@ const Canvas2 = ({ session }) => {
   const [initialClickPos, setInitialClickPos] = useState({ x: 0, y: 0 });
   const [showMetadata, setShowMetadata] = useState(false);
   const [pixelMetadata, setPixelMetadata] = useState(null);
+  const [isSpaceDown, setIsSpaceDown] = useState(false);
 
   useEffect(() => {
     const socket = connectSocket();
@@ -137,6 +137,8 @@ const Canvas2 = ({ session }) => {
     }
 
     try {
+      // updateQueueRef.current.push({ x, y, colourIndex });
+
       const res = await axiosInstance.post(
         `/set-pixel/${x}/${y}/${colourIndex}`
       );
@@ -159,6 +161,10 @@ const Canvas2 = ({ session }) => {
   };
 
   const handleKeyDown = useCallback((e) => {
+    if (e.code === "Space") {
+      setIsSpaceDown(true);
+    }
+
     switch (e.key) {
       case "ArrowUp":
         setOffset((prev) => ({ ...prev, y: prev.y + arrowKeyStep }));
@@ -174,6 +180,12 @@ const Canvas2 = ({ session }) => {
         break;
     }
   }, []);
+
+  const handleKeyUp = useCallback((e) => {
+    if (e.code === "Space") {
+      setIsSpaceDown(false);
+    }
+  });
 
   const handleWheel = (e) => {
     window.addEventListener("wheel", { passive: false });
@@ -216,10 +228,19 @@ const Canvas2 = ({ session }) => {
     }
 
     if (isDragging) {
-      setOffset({
-        x: e.clientX - startPan.x,
-        y: e.clientY - startPan.y,
-      });
+      if (!isSpaceDown) {
+        setOffset({
+          x: e.clientX - startPan.x,
+          y: e.clientY - startPan.y,
+        });
+      } else {
+        const rect = containerRef.current.getBoundingClientRect();
+        const x = Math.floor((e.clientX - rect.left - offset.x) / scale);
+        const y = Math.floor((e.clientY - rect.top - offset.y) / scale);
+        if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasWidth) {
+          updatePixel(x, y, activeColour);
+        }
+      }
     }
 
     const rect = containerRef.current.getBoundingClientRect();
@@ -264,6 +285,16 @@ const Canvas2 = ({ session }) => {
     setIsClick(false);
   };
 
+  useEffect(() => {
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+    };
+  }, [handleKeyDown, handleKeyUp]);
+
   return (
     <>
       <div className="h-screen w-screen fixed flex items-center justify-center bg-white">
@@ -276,7 +307,7 @@ const Canvas2 = ({ session }) => {
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
           tabIndex={0}
-          onKeyDown={handleKeyDown}
+          // onKeyDown={handleKeyDown}
         >
           <canvas
             id="canvas"
