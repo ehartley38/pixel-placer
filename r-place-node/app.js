@@ -9,6 +9,7 @@ const redisClient = Redis.createClient()
 const app = express()
 
 app.use(cors(corsOptions))
+app.use(express.json())
 
 app.use("/api/", mainRouter)
 

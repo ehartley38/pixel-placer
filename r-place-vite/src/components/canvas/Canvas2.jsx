@@ -19,12 +19,17 @@ const dragThreshold = 10;
 const zoomIntensity = 0.1;
 const arrowKeyStep = 10;
 
+// TODO - Handle error when attempting to add colour with no session
+// TODO - Socket batch handling
 const Canvas2 = ({ session }) => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
   const imageDataRef = useRef(null);
   const updateQueueRef = useRef([]);
   const hoverTimerRef = useRef(null);
+  const batchTimerRef = useRef(null);
+  const localUpdateQueueRef = useRef([]);
+  const pixelBatchSetRef = useRef(new Set());
 
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -37,6 +42,7 @@ const Canvas2 = ({ session }) => {
   const [showMetadata, setShowMetadata] = useState(false);
   const [pixelMetadata, setPixelMetadata] = useState(null);
   const [isSpaceDown, setIsSpaceDown] = useState(false);
+  const [pixelBatch, setPixelBatch] = useState([]);
 
   useEffect(() => {
     const socket = connectSocket();
@@ -107,7 +113,10 @@ const Canvas2 = ({ session }) => {
       const imageData = imageDataRef.current;
       if (!imageData || !context) return;
 
-      const updates = updateQueueRef.current.splice(0);
+      const serverUpdates = updateQueueRef.current.splice(0);
+      const localUpdates = localUpdateQueueRef.current.splice(0);
+
+      const updates = [...serverUpdates, ...localUpdates];
 
       if (updates.length > 0) {
         updates.forEach(({ x, y, colourIndex }) => {
@@ -130,34 +139,80 @@ const Canvas2 = ({ session }) => {
     window.addEventListener("keydown", handleKeyDown);
   }, []);
 
-  const updatePixel = async (x, y, colourIndex) => {
-    if (x < 0 || x >= canvasWidth || y < 0 || y >= canvasWidth) {
-      console.error("Pixel coordinates out of bounds");
-      return;
-    }
+  // const updatePixel = async (x, y, colourIndex) => {
+  //   if (x < 0 || x >= canvasWidth || y < 0 || y >= canvasWidth) {
+  //     console.error("Pixel coordinates out of bounds");
+  //     return;
+  //   }
 
+  //   try {
+  //     // updateQueueRef.current.push({ x, y, colourIndex });
+
+  //     const res = await axiosInstance.post(
+  //       `/set-pixel/${x}/${y}/${colourIndex}`
+  //     );
+
+  //     if (res.status == 200) {
+  //       updateQueueRef.current.push({ x, y, colourIndex });
+  //       const socket = getSocket();
+
+  //       socket.emit("pixel-update", { x, y, colourIndex });
+  //     } else if (res.status == 401) {
+  //       // TODO - Display Login
+  //       return;
+  //     } else {
+  //       // TODO - Display error message
+  //       return;
+  //     }
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // };
+
+  const updatePixelBatch = async (batch) => {
     try {
-      // updateQueueRef.current.push({ x, y, colourIndex });
+      const res = await axiosInstance.post("/set-pixels-batch", {
+        pixels: batch,
+      });
 
-      const res = await axiosInstance.post(
-        `/set-pixel/${x}/${y}/${colourIndex}`
-      );
+      if (res.status === 200) {
+        batch.forEach(({ x, y, colourIndex }) => {
+          updateQueueRef.current.push({ x, y, colourIndex });
+        });
 
-      if (res.status == 200) {
-        updateQueueRef.current.push({ x, y, colourIndex });
         const socket = getSocket();
-
-        socket.emit("pixel-update", { x, y, colourIndex });
-      } else if (res.status == 401) {
+        // TODO - Implement this socket batch update
+        socket.emit("pixels-update-batch", batch);
+      } else if (res.status === 401) {
         // TODO - Display Login
-        return;
       } else {
         // TODO - Display error message
-        return;
       }
     } catch (err) {
       console.error(err);
     }
+  };
+
+  // If there has not been an update in 50ms, then update the batch
+  const addToPixelBatch = (x, y, colourIndex) => {
+    const pixelKey = `${x},${y}`;
+    if (!pixelBatchSetRef.current.has(pixelKey)) {
+      pixelBatchSetRef.current.add(pixelKey);
+      setPixelBatch((prevBatch) => [...prevBatch, { x, y, colourIndex }]);
+      localUpdateQueueRef.current.push({ x, y, colourIndex });
+    }
+
+    if (batchTimerRef.current) {
+      clearTimeout(batchTimerRef.current);
+    }
+
+    batchTimerRef.current = setTimeout(() => {
+      if (pixelBatch.length > 0) {
+        updatePixelBatch(pixelBatch);
+        setPixelBatch([]);
+        pixelBatchSetRef.current.clear();
+      }
+    }, 50);
   };
 
   const handleKeyDown = useCallback((e) => {
@@ -227,6 +282,8 @@ const Canvas2 = ({ session }) => {
       }
     }
 
+    // Maybe check for valid session here
+
     if (isDragging) {
       if (!isSpaceDown) {
         setOffset({
@@ -238,7 +295,7 @@ const Canvas2 = ({ session }) => {
         const x = Math.floor((e.clientX - rect.left - offset.x) / scale);
         const y = Math.floor((e.clientY - rect.top - offset.y) / scale);
         if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasWidth) {
-          updatePixel(x, y, activeColour);
+          addToPixelBatch(x, y, activeColour);
         }
       }
     }
@@ -246,7 +303,8 @@ const Canvas2 = ({ session }) => {
     const rect = containerRef.current.getBoundingClientRect();
     const x = Math.floor((e.clientX - rect.left - offset.x) / scale);
     const y = Math.floor((e.clientY - rect.top - offset.y) / scale);
-
+    
+    // Show metadata logic
     if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasWidth) {
       setHoveredPixel({ x, y });
       clearTimeout(hoverTimerRef.current);
@@ -277,12 +335,18 @@ const Canvas2 = ({ session }) => {
       const y = Math.floor((e.clientY - rect.top - offset.y) / scale);
 
       if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasWidth) {
-        updatePixel(x, y, activeColour);
+        addToPixelBatch(x, y, activeColour);
       }
     }
 
     setIsDragging(false);
     setIsClick(false);
+
+    if (pixelBatchSetRef.current.size > 0) {
+      updatePixelBatch([...pixelBatch]);
+      setPixelBatch([]);
+      pixelBatchSetRef.current.clear();
+    }
   };
 
   useEffect(() => {

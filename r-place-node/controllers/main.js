@@ -27,18 +27,18 @@ mainRouter.get(
   "/get-pixel/:xCoord/:yCoord",
   supabaseMiddleware,
   async (req, res) => {
-
     const x = parseInt(req.params.xCoord);
     const y = parseInt(req.params.yCoord);
 
     try {
       // const colour = await getPixelColour(x, y);
-
+      
       const { data, error } = await supabase
         .from("canvas_metadata")
         .select(`*, createdBy(username)`)
         .eq("xPos", x)
         .eq("yPos", y);
+        
 
       if (!error) {
         return res.status(200).json({ data: data });
@@ -81,6 +81,53 @@ mainRouter.post(
     return res.status(200).json({ msg: "Pixel set" });
   }
 );
+
+mainRouter.post("/set-pixels-batch", supabaseMiddleware, async (req, res) => {
+  const { pixels } = req.body;
+
+  const user = req.user;
+
+  if (!Array.isArray(pixels) || pixels.length === 0) {
+    return res.status(400).json({ error: "Invalid pixel batch data" });
+  }
+
+  try {
+    const batchSize = 50;
+    for (let i = 0; i < pixels.length; i += batchSize) {
+      const batch = pixels.slice(i, i + batchSize);
+
+      await Promise.all(
+        batch.map((pixel) =>
+          setPixelColour(pixel.x, pixel.y, pixel.colourIndex)
+        )
+      );
+
+      const metadataBatch = batch.map((pixel) => ({
+        xPos: pixel.x,
+        yPos: pixel.y,
+        colour: pixel.colourIndex,
+        createdBy: user.sub,
+        createdDate: formatDate(Date.now()),
+      }));
+
+      const { data, error } = await supabase
+        .from("canvas_metadata")
+        .upsert(metadataBatch)
+        .select()
+        // console.log(data);
+        
+
+      if (error) {
+        console.error("Error upserting metadata batch:", error);
+      }
+    }
+
+    return res.status(200).json({ msg: "Pixel batch processed successfully" });
+  } catch (err) {
+    console.error("Error processing pixel batch:", err);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+});
 
 const formatDate = (timestamp) => {
   const date = new Date(timestamp);
