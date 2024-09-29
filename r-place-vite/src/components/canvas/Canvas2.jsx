@@ -5,6 +5,7 @@ import { connectSocket, getSocket } from "../../services/socket";
 import ColourPicker from "./ColourPicker";
 import SelectedColour from "./SelectedColour";
 import { PixelMetadata } from "./PixelMetadata";
+import { Coordinates } from "./Coordinates";
 
 // const canvasWidth = import.meta.env.VITE_CANVAS_WIDTH;
 // console.log(canvasWidth);
@@ -231,9 +232,9 @@ const Canvas2 = ({ session }) => {
       hoverTimerRef.current = setTimeout(async () => {
         try {
           const res = await axiosInstance.get(`/get-pixel/${x}/${y}`);
-          const metadata = res.data.data[0]
-          
-          setPixelMetadata(metadata)
+          const metadata = res.data.data[0];
+
+          setPixelMetadata(metadata);
           setShowMetadata(true);
         } catch (err) {
           console.log(err);
@@ -303,9 +304,21 @@ const Canvas2 = ({ session }) => {
               }}
             />
           )}
-          {showMetadata && pixelMetadata && hoveredPixel.x !== -1 && hoveredPixel.y !== -1 && (
-            <PixelMetadata hoveredPixel={hoveredPixel} pixelMetadata={pixelMetadata}/>
+
+          {hoveredPixel.x !== -1 && hoveredPixel.y !== -1 && (
+            <div className="fixed top-0 right-0 z-[1000]">
+              <div className="flex flex-col items-end space-y-3 m-2">
+                <Coordinates hoveredPixel={hoveredPixel} />
+                {showMetadata && pixelMetadata && (
+                  <PixelMetadata
+                    hoveredPixel={hoveredPixel}
+                    pixelMetadata={pixelMetadata}
+                  />
+                )}
+              </div>
+            </div>
           )}
+
           <SelectedColour activeColour={activeColour} />
         </div>
       </div>

@@ -1,4 +1,4 @@
-export const PixelMetadata = ({ pixelMetadata }) => {
+export const Coordinates = ({ hoveredPixel }) => {
   return (
     <div
       style={{
@@ -10,9 +10,7 @@ export const PixelMetadata = ({ pixelMetadata }) => {
         fontWeight: "bold",
       }}
     >
-      <p>Colour: {pixelMetadata.colour}</p>
-      <p>CreatedBy: {pixelMetadata.createdBy.username}</p>
-      <p>CreatedDate: {pixelMetadata.createdDate}</p>
+      ({hoveredPixel.x}, {hoveredPixel.y})
     </div>
   );
 };
