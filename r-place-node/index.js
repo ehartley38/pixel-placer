@@ -1,8 +1,7 @@
 import app from "./app.js";
 import http from "http";
-import { Server as SocketIOServer } from 'socket.io'; // Importing socket.io
+import { Server as SocketIOServer } from "socket.io"; // Importing socket.io
 import { registerSocketEvents } from "./controllers/socketHandlers.js";
-
 
 const server = http.createServer(app);
 
@@ -14,19 +13,21 @@ const io = new SocketIOServer(server, {
   },
 });
 
+io.on("connection", (socket) => {
+  console.log("A userASD connected:", socket.id);
 
-io.on('connection', (socket) => {
-  console.log('A userASD connected:', socket.id);
-  
-  socket.on("pixel-update", (data) => {
-    io.emit("canvas-update", data);
+  // socket.on("pixel-update", (data) => {
+  //   io.emit("canvas-update", data);
+  // });
+
+  socket.on("pixels-update-batch", (data) => {
+    io.emit("canvas-update-batch", data);
   });
 
-  socket.on('disconnect', () => {
-    console.log('A user disconnected');
+  socket.on("disconnect", () => {
+    console.log("A user disconnected");
   });
 });
-
 
 const port = process.env.PORT || 8080;
 

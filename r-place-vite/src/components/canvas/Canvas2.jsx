@@ -21,6 +21,8 @@ const arrowKeyStep = 10;
 
 // TODO - Handle error when attempting to add colour with no session
 // TODO - Socket batch handling
+// TODO - Add a max batch size to prevent very large updates
+
 const Canvas2 = ({ session }) => {
   const canvasRef = useRef(null);
   const containerRef = useRef(null);
@@ -47,9 +49,15 @@ const Canvas2 = ({ session }) => {
   useEffect(() => {
     const socket = connectSocket();
 
-    socket.on("canvas-update", (data) => {
-      const { x, y, colourIndex } = data;
-      updateQueueRef.current.push({ x, y, colourIndex });
+    // socket.on("canvas-update", (data) => {
+    //   const { x, y, colourIndex } = data;
+    //   updateQueueRef.current.push({ x, y, colourIndex });
+    // });
+
+    socket.on("canvas-update-batch", (data) => {
+      data.forEach(({ x, y, colourIndex }) => {
+        updateQueueRef.current.push({ x, y, colourIndex });
+      });
     });
 
     return () => {
@@ -303,7 +311,7 @@ const Canvas2 = ({ session }) => {
     const rect = containerRef.current.getBoundingClientRect();
     const x = Math.floor((e.clientX - rect.left - offset.x) / scale);
     const y = Math.floor((e.clientY - rect.top - offset.y) / scale);
-    
+
     // Show metadata logic
     if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasWidth) {
       setHoveredPixel({ x, y });
