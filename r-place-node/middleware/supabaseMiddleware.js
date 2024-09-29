@@ -12,24 +12,22 @@ const getToken = (req) => {
 
 export const supabaseMiddleware = async (req, res, next) => {
   const jwt = getToken(req);
-  
 
   if (!jwt) {
     return res.status(401).json({ Error: "No JWT provided" });
   }
 
-  const { data: { user } } = await supabase.auth.getUser(jwt)
-
-
+  const {
+    data: { user },
+  } = await supabase.auth.getUser(jwt);
 
   if (!user) {
-    return res.status(401).json({Error: "No user found"});
+    return res.status(401).json({ Error: "No user found" });
   }
 
-  // TODO - Put more thought into this. Apply it to the relevant routes. Figure out if 
+  // TODO - Put more thought into this. Apply it to the relevant routes. Figure out if
   // The service key is the right thing to use
-//   req.user = user;
-//   await supabase.auth.setAuth(jwt);
+  req.user = user;
 
   next();
 };

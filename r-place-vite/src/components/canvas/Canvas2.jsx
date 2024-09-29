@@ -137,7 +137,6 @@ const Canvas2 = ({ session }) => {
       if (res.status == 200) {
         updateQueueRef.current.push({ x, y, colourIndex });
         const socket = getSocket();
-        console.log(socket);
         
         socket.emit("pixel-update", { x, y, colourIndex });
 
