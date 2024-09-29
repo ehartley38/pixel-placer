@@ -13,8 +13,8 @@ export const PixelMetadata = ({ pixelMetadata }) => {
       }}
     >
       <p>Colour: {colourPalette[pixelMetadata.colour].name}</p>
-      <p>CreatedBy: {pixelMetadata.createdBy.username}</p>
-      <p>CreatedDate: {pixelMetadata.createdDate}</p>
+      <p>Placed by: {pixelMetadata.createdBy.username}</p>
+      <p>Date: {pixelMetadata.createdDate}</p>
     </div>
   );
 };

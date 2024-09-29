@@ -21,6 +21,8 @@ export const supabaseMiddleware = async (req, res, next) => {
     data: { user },
   } = await supabase.auth.getUser(jwt);
 
+  // console.log(user);
+
   if (!user) {
     return res.status(401).json({ Error: "No user found" });
   }
