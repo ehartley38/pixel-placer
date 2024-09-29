@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import colourPalette from "../../utils/pallette";
 
-const SelectedColour = ({activeColour}) => {
+const SelectedColour = ({ activeColour }) => {
   const [position, setPosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -24,7 +24,7 @@ const SelectedColour = ({activeColour}) => {
         top: `${position.y + 3}px`,
         width: "20px",
         height: "20px",
-        backgroundColor: `rgba(${colourPalette[activeColour].join(",")})`,
+        backgroundColor: `rgba(${colourPalette[activeColour].rgba.join(",")})`,
         pointerEvents: "none",
         zIndex: 9999,
         border: "1px solid black",

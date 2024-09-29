@@ -1,3 +1,5 @@
+import colourPalette from "../../utils/pallette";
+
 export const PixelMetadata = ({ pixelMetadata }) => {
   return (
     <div
@@ -10,7 +12,7 @@ export const PixelMetadata = ({ pixelMetadata }) => {
         fontWeight: "bold",
       }}
     >
-      <p>Colour: {pixelMetadata.colour}</p>
+      <p>Colour: {colourPalette[pixelMetadata.colour].name}</p>
       <p>CreatedBy: {pixelMetadata.createdBy.username}</p>
       <p>CreatedDate: {pixelMetadata.createdDate}</p>
     </div>

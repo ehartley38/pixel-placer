@@ -11,9 +11,15 @@ import { Coordinates } from "./Coordinates";
 // console.log(canvasWidth);
 const canvasWidth = 1000;
 
-const abgrPalette = colourPalette.map(
-  ([r, g, b, a]) => (a << 24) | (b << 16) | (g << 8) | r
-);
+// const abgrPalette = colourPalette.map(
+//   ([r, g, b, a]) => (a << 24) | (b << 16) | (g << 8) | r
+// );
+
+const abgrPalette = colourPalette.map(({ rgba }) => {
+  const [r, g, b, a] = rgba;
+  return (a << 24) | (b << 16) | (g << 8) | r;
+});
+
 const dragThreshold = 10;
 const zoomIntensity = 0.1;
 const arrowKeyStep = 10;

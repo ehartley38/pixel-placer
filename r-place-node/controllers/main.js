@@ -27,7 +27,6 @@ mainRouter.get(
   "/get-pixel/:xCoord/:yCoord",
   supabaseMiddleware,
   async (req, res) => {
-    console.log("Getting pixel");
 
     const x = parseInt(req.params.xCoord);
     const y = parseInt(req.params.yCoord);

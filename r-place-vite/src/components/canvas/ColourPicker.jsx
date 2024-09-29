@@ -43,7 +43,7 @@ const ColourPicker = ({ activeColour, setActiveColour }) => {
             key={index}
             className="w-9 h-9 rounded-full cursor-pointer hover:scale-110 transition-transform duration-200 flex-shrink-0 my-1"
             style={{
-              backgroundColor: `rgba(${colour.join(",")})`,
+              backgroundColor: `rgba(${colour.rgba.join(",")})`,
               border: `2px solid ${index === activeColour ? '#42afed' : '#C5C5C5'}`,
             }}
             onClick={() => handleColourSelect(index)}
