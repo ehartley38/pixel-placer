@@ -84,6 +84,8 @@ mainRouter.post(
 
 mainRouter.post("/set-pixels-batch", supabaseMiddleware, async (req, res) => {
   const { pixels } = req.body;
+  console.log(pixels); 
+  
 
   const user = req.user;
 

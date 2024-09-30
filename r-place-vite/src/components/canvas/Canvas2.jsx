@@ -9,6 +9,8 @@ import { Coordinates } from "./Coordinates";
 
 // const canvasWidth = import.meta.env.VITE_CANVAS_WIDTH;
 const canvasWidth = 1000;
+const BATCH_INTERVAL = 5000;
+const MAX_BATCH_SIZE = 100;
 
 const abgrPalette = colourPalette.map(({ rgba }) => {
   const [r, g, b, a] = rgba;
@@ -48,11 +50,6 @@ const Canvas2 = ({ session }) => {
 
   useEffect(() => {
     const socket = connectSocket();
-
-    // socket.on("canvas-update", (data) => {
-    //   const { x, y, colourIndex } = data;
-    //   updateQueueRef.current.push({ x, y, colourIndex });
-    // });
 
     socket.on("canvas-update-batch", (data) => {
       data.forEach(({ x, y, colourIndex }) => {
@@ -147,36 +144,6 @@ const Canvas2 = ({ session }) => {
     window.addEventListener("keydown", handleKeyDown);
   }, []);
 
-  // const updatePixel = async (x, y, colourIndex) => {
-  //   if (x < 0 || x >= canvasWidth || y < 0 || y >= canvasWidth) {
-  //     console.error("Pixel coordinates out of bounds");
-  //     return;
-  //   }
-
-  //   try {
-  //     // updateQueueRef.current.push({ x, y, colourIndex });
-
-  //     const res = await axiosInstance.post(
-  //       `/set-pixel/${x}/${y}/${colourIndex}`
-  //     );
-
-  //     if (res.status == 200) {
-  //       updateQueueRef.current.push({ x, y, colourIndex });
-  //       const socket = getSocket();
-
-  //       socket.emit("pixel-update", { x, y, colourIndex });
-  //     } else if (res.status == 401) {
-  //       // TODO - Display Login
-  //       return;
-  //     } else {
-  //       // TODO - Display error message
-  //       return;
-  //     }
-  //   } catch (err) {
-  //     console.error(err);
-  //   }
-  // };
-
   const updatePixelBatch = async (batch) => {
     try {
       const res = await axiosInstance.post("/set-pixels-batch", {
@@ -201,27 +168,49 @@ const Canvas2 = ({ session }) => {
     }
   };
 
-  // If there has not been an update in 50ms, then update the batch
+  // Batch update pixels on server when max batch size is reach or after 5 seconds
   const addToPixelBatch = (x, y, colourIndex) => {
     const pixelKey = `${x},${y}`;
     if (!pixelBatchSetRef.current.has(pixelKey)) {
       pixelBatchSetRef.current.add(pixelKey);
-      setPixelBatch((prevBatch) => [...prevBatch, { x, y, colourIndex }]);
+      setPixelBatch((prevBatch) => {
+        const newBatch = [...prevBatch, { x, y, colourIndex }];
+        if (newBatch.length >= MAX_BATCH_SIZE) {
+          console.log("Updating batch");
+
+          updatePixelBatch(newBatch);
+          return [];
+        }
+
+        return newBatch;
+      });
+
       localUpdateQueueRef.current.push({ x, y, colourIndex });
     }
 
-    if (batchTimerRef.current) {
-      clearTimeout(batchTimerRef.current);
-    }
+    if (!batchTimerRef.current) {
+      console.log("Setting up new interval");
+      batchTimerRef.current = setInterval(() => {
+        setPixelBatch((currentBatch) => {
+          if (currentBatch.length > 0) {
+            console.log("Updating pixels batch in interval");
+            updatePixelBatch(currentBatch);
+          }
+          batchTimerRef.current = null;
 
-    batchTimerRef.current = setTimeout(() => {
-      if (pixelBatch.length > 0) {
-        updatePixelBatch(pixelBatch);
-        setPixelBatch([]);
-        pixelBatchSetRef.current.clear();
-      }
-    }, 50);
+          return [];
+        });
+      }, BATCH_INTERVAL);
+    }
   };
+
+  useEffect(() => {
+    return () => {
+      if (batchTimerRef.current) {
+        clearInterval(batchTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleKeyDown = useCallback((e) => {
     if (e.code === "Space") {
@@ -337,24 +326,26 @@ const Canvas2 = ({ session }) => {
   };
 
   const handleMouseUp = (e) => {
+    pixelBatchSetRef.current.clear();
+
     if (isClick && !isDragging) {
       const rect = containerRef.current.getBoundingClientRect();
       const x = Math.floor((e.clientX - rect.left - offset.x) / scale);
       const y = Math.floor((e.clientY - rect.top - offset.y) / scale);
 
       if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasWidth) {
-        addToPixelBatch(x, y, activeColour);
+        // addToPixelBatch(x, y, activeColour);
       }
     }
 
     setIsDragging(false);
     setIsClick(false);
 
-    if (pixelBatchSetRef.current.size > 0) {
-      updatePixelBatch([...pixelBatch]);
-      setPixelBatch([]);
-      pixelBatchSetRef.current.clear();
-    }
+    // if (pixelBatchSetRef.current.size > 0) {
+    //   updatePixelBatch([...pixelBatch]);
+    //   setPixelBatch([]);
+    //   pixelBatchSetRef.current.clear();
+    // }
   };
 
   useEffect(() => {
