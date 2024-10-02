@@ -168,10 +168,12 @@ const Canvas2 = ({ session }) => {
     }
   };
 
-  // Batch update pixels on server when max batch size is reach or after 5 seconds
+  // Batch update pixels on server when max batch size is reached, or after the batch interval
   const addToPixelBatch = (x, y, colourIndex) => {
     const pixelKey = `${x},${y}`;
     if (!pixelBatchSetRef.current.has(pixelKey)) {
+      localUpdateQueueRef.current.push({ x, y, colourIndex });
+
       pixelBatchSetRef.current.add(pixelKey);
       setPixelBatch((prevBatch) => {
         const newBatch = [...prevBatch, { x, y, colourIndex }];
@@ -184,16 +186,12 @@ const Canvas2 = ({ session }) => {
 
         return newBatch;
       });
-
-      localUpdateQueueRef.current.push({ x, y, colourIndex });
     }
 
     if (!batchTimerRef.current) {
-      console.log("Setting up new interval");
       batchTimerRef.current = setInterval(() => {
         setPixelBatch((currentBatch) => {
           if (currentBatch.length > 0) {
-            console.log("Updating pixels batch in interval");
             updatePixelBatch(currentBatch);
           }
           batchTimerRef.current = null;
@@ -292,7 +290,10 @@ const Canvas2 = ({ session }) => {
         const x = Math.floor((e.clientX - rect.left - offset.x) / scale);
         const y = Math.floor((e.clientY - rect.top - offset.y) / scale);
         if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasWidth) {
-          addToPixelBatch(x, y, activeColour);
+          const pixelKey = `${x},${y}`;
+          if (!pixelBatchSetRef.current.has(pixelKey)) {
+            addToPixelBatch(x, y, activeColour);
+          }
         }
       }
     }
@@ -302,6 +303,7 @@ const Canvas2 = ({ session }) => {
     const y = Math.floor((e.clientY - rect.top - offset.y) / scale);
 
     // Show metadata logic
+    // TODO - Cache metadata clientside
     if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasWidth) {
       setHoveredPixel({ x, y });
       clearTimeout(hoverTimerRef.current);
