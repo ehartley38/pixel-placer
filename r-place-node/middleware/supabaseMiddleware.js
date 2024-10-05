@@ -46,6 +46,8 @@ export const supabaseMiddleware = async (req, res, next) => {
 //   const {
 //     data: { user },
 //   } = await supabase.auth.getUser(jwt);
+//   console.log(user);
+  
 
 //   // console.log(user);
 

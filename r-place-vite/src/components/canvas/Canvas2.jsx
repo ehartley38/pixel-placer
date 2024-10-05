@@ -9,7 +9,7 @@ import { Coordinates } from "./Coordinates";
 
 // const canvasWidth = import.meta.env.VITE_CANVAS_WIDTH;
 const canvasWidth = 1000;
-const BATCH_INTERVAL = 5000;
+const BATCH_INTERVAL = 500;
 const MAX_BATCH_SIZE = 100;
 
 const abgrPalette = colourPalette.map(({ rgba }) => {
@@ -336,18 +336,12 @@ const Canvas2 = ({ session }) => {
       const y = Math.floor((e.clientY - rect.top - offset.y) / scale);
 
       if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasWidth) {
-        // addToPixelBatch(x, y, activeColour);
+        addToPixelBatch(x, y, activeColour);
       }
     }
 
     setIsDragging(false);
     setIsClick(false);
-
-    // if (pixelBatchSetRef.current.size > 0) {
-    //   updatePixelBatch([...pixelBatch]);
-    //   setPixelBatch([]);
-    //   pixelBatchSetRef.current.clear();
-    // }
   };
 
   useEffect(() => {
