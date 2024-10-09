@@ -7,6 +7,7 @@ import SelectedColour from "./SelectedColour";
 import { PixelMetadata } from "./PixelMetadata";
 import { Coordinates } from "./Coordinates";
 import { OnlineCount } from "./OnlineCount";
+import { AuthModal } from "../auth/AuthModal";
 
 // const canvasWidth = import.meta.env.VITE_CANVAS_WIDTH;
 const canvasWidth = 1000;
@@ -52,6 +53,7 @@ const Canvas2 = ({ session }) => {
   const [pixelBatch, setPixelBatch] = useState([]);
   const [socketConnections, setSocketConnections] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [showLoginModal, setShowLoginModal] = useState(false);
 
   // Handle socket connections
   useEffect(() => {
@@ -333,7 +335,7 @@ const Canvas2 = ({ session }) => {
 
     // Show metadata logic
     // TODO - Cache metadata clientside
-    if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasWidth) {
+    if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasWidth && session) {
       setHoveredPixel({ x, y });
       clearTimeout(hoverTimerRef.current);
       setShowMetadata(false);
@@ -360,12 +362,16 @@ const Canvas2 = ({ session }) => {
     pixelBatchSetRef.current.clear();
 
     if (isClick && !isDragging) {
-      const rect = containerRef.current.getBoundingClientRect();
-      const x = Math.floor((e.clientX - rect.left - offset.x) / scale);
-      const y = Math.floor((e.clientY - rect.top - offset.y) / scale);
+      if (!session) {
+        setShowLoginModal(true);
+      } else {
+        const rect = containerRef.current.getBoundingClientRect();
+        const x = Math.floor((e.clientX - rect.left - offset.x) / scale);
+        const y = Math.floor((e.clientY - rect.top - offset.y) / scale);
 
-      if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasWidth) {
-        addToPixelBatch(x, y, activeColour);
+        if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasWidth) {
+          addToPixelBatch(x, y, activeColour);
+        }
       }
     }
 
@@ -391,79 +397,83 @@ const Canvas2 = ({ session }) => {
     );
   }
 
-  return socketConnections &&  (
-    <>
-      <div className="h-screen w-screen fixed flex items-center justify-center bg-white">
-        <div
-          ref={containerRef}
-          className="relative overflow-hidden h-screen w-screen cursor-crosshair"
-          onWheel={handleWheel}
-          onMouseDown={handleMouseDown}
-          onMouseMove={handleMouseMove}
-          onMouseUp={handleMouseUp}
-          onMouseLeave={handleMouseUp}
-          tabIndex={0}
-        >
-          <canvas
-            id="canvas"
-            ref={canvasRef}
-            width={canvasWidth}
-            height={canvasWidth}
-            style={{
-              border: "1px solid black",
-              position: "absolute",
-              left: `${offset.x}px`,
-              top: `${offset.y}px`,
-              width: `${canvasWidth * scale}px`,
-              height: `${canvasWidth * scale}px`,
-              imageRendering: "pixelated",
-            }}
-          />
-          {/* Pixel outline */}
-          {hoveredPixel.x !== -1 && hoveredPixel.y !== -1 && (
-            <div
+  return (
+    socketConnections && (
+      <>
+        <div className="h-screen w-screen fixed flex items-center justify-center bg-white">
+          <div
+            ref={containerRef}
+            className="relative overflow-hidden h-screen w-screen cursor-crosshair"
+            onWheel={handleWheel}
+            onMouseDown={handleMouseDown}
+            onMouseMove={handleMouseMove}
+            onMouseUp={handleMouseUp}
+            onMouseLeave={handleMouseUp}
+            tabIndex={0}
+          >
+            <canvas
+              id="canvas"
+              ref={canvasRef}
+              width={canvasWidth}
+              height={canvasWidth}
               style={{
-                position: "absolute",
-                left: `${offset.x + hoveredPixel.x * scale}px`,
-                top: `${offset.y + hoveredPixel.y * scale}px`,
-                width: `${scale}px`,
-                height: `${scale}px`,
                 border: "1px solid black",
-                pointerEvents: "none",
+                position: "absolute",
+                left: `${offset.x}px`,
+                top: `${offset.y}px`,
+                width: `${canvasWidth * scale}px`,
+                height: `${canvasWidth * scale}px`,
+                imageRendering: "pixelated",
               }}
             />
-          )}
+            {/* Pixel outline */}
+            {hoveredPixel.x !== -1 && hoveredPixel.y !== -1 && (
+              <div
+                style={{
+                  position: "absolute",
+                  left: `${offset.x + hoveredPixel.x * scale}px`,
+                  top: `${offset.y + hoveredPixel.y * scale}px`,
+                  width: `${scale}px`,
+                  height: `${scale}px`,
+                  border: "1px solid black",
+                  pointerEvents: "none",
+                }}
+              />
+            )}
 
-          {/* Online Count */}
-          <div className="fixed top-0 left-0 z-[1000] m-2">
-            <div className="flex flex-col">
-              <OnlineCount socketConnections={socketConnections} />
-            </div>
-          </div>
-
-          {/* Coordniates + Metadata */}
-          {hoveredPixel.x !== -1 && hoveredPixel.y !== -1 && (
-            <div className="fixed top-0 right-0 z-[1000]">
-              <div className="flex flex-col items-end space-y-2 m-2">
-                <Coordinates hoveredPixel={hoveredPixel} />
-                {showMetadata && pixelMetadata && (
-                  <PixelMetadata
-                    hoveredPixel={hoveredPixel}
-                    pixelMetadata={pixelMetadata}
-                  />
-                )}
+            {/* Online Count */}
+            <div className="fixed top-0 left-0 z-[1000] m-2">
+              <div className="flex flex-col">
+                <OnlineCount socketConnections={socketConnections} />
               </div>
             </div>
-          )}
 
-          <SelectedColour activeColour={activeColour} />
+            {/* Coordniates + Metadata */}
+            {hoveredPixel.x !== -1 && hoveredPixel.y !== -1 && (
+              <div className="fixed top-0 right-0 z-[1000]">
+                <div className="flex flex-col items-end space-y-2 m-2">
+                  <Coordinates hoveredPixel={hoveredPixel} />
+                  {showMetadata && pixelMetadata && (
+                    <PixelMetadata
+                      hoveredPixel={hoveredPixel}
+                      pixelMetadata={pixelMetadata}
+                    />
+                  )}
+                </div>
+              </div>
+            )}
+
+            <SelectedColour activeColour={activeColour} />
+          </div>
+
+          {showLoginModal && <AuthModal />}
         </div>
-      </div>
-      <ColourPicker
-        activeColour={activeColour}
-        setActiveColour={setActiveColour}
-      />
-    </>
+        <ColourPicker
+          activeColour={activeColour}
+          setActiveColour={setActiveColour}
+        />
+      </>
+    )
   );
 };
 
