@@ -29,6 +29,7 @@ const arrowKeyStep = 10;
 
 const Canvas2 = ({ session }) => {
   const canvasRef = useRef(null);
+  const offscreenCanvasRef = useRef(null);
   const containerRef = useRef(null);
   const imageDataRef = useRef(null);
   const updateQueueRef = useRef([]);
@@ -52,6 +53,7 @@ const Canvas2 = ({ session }) => {
   const [socketConnections, setSocketConnections] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  // Handle socket connections
   useEffect(() => {
     const socket = connectSocket();
 
@@ -80,8 +82,13 @@ const Canvas2 = ({ session }) => {
     };
   }, []);
 
+  // Fetch initial canvas data
   useEffect(() => {
-    imageDataRef.current = new ImageData(canvasWidth, canvasWidth);
+    // Off screen canvas used for initial load
+    offscreenCanvasRef.current = document.createElement("canvas");
+    offscreenCanvasRef.current.width = canvasWidth;
+    offscreenCanvasRef.current.height = canvasWidth;
+
 
     const fetchCanvasState = async () => {
       setIsLoading(true);
@@ -95,13 +102,12 @@ const Canvas2 = ({ session }) => {
 
         const canvasState = new Uint8Array(canvasStateResponse.data);
 
-        const canvas = canvasRef.current;
-        const context = canvas.getContext("2d");
+        const offscreenContext = offscreenCanvasRef.current.getContext("2d");
 
-        canvas.width = canvasWidth;
-        canvas.height = canvasWidth;
-
-        const imageData = context.createImageData(canvasWidth, canvasWidth);
+        const imageData = offscreenContext.createImageData(
+          canvasWidth,
+          canvasWidth
+        );
         const buffer = new ArrayBuffer(imageData.data.length);
         const uint8Array = new Uint8ClampedArray(buffer);
         const uint32Array = new Uint32Array(buffer);
@@ -119,7 +125,6 @@ const Canvas2 = ({ session }) => {
         }
 
         imageData.data.set(uint8Array);
-        context.putImageData(imageData, 0, 0);
         imageDataRef.current = imageData;
       } catch (err) {
         console.error("Error fetching canvas state:", err);
@@ -130,38 +135,44 @@ const Canvas2 = ({ session }) => {
 
     fetchCanvasState();
 
-    const renderLoop = () => {
-      
-      const canvas = canvasRef.current;
-      const context = canvas.getContext("2d");
-      const imageData = imageDataRef.current;
-      if (!imageData || !context) return;
-
-      const serverUpdates = updateQueueRef.current.splice(0);
-      const localUpdates = localUpdateQueueRef.current.splice(0);
-
-      const updates = [...serverUpdates, ...localUpdates];
-
-      if (updates.length > 0) {
-        updates.forEach(({ x, y, colourIndex }) => {
-          const index = (y * canvasWidth + x) * 4;
-          const uint32Array = new Uint32Array(imageData.data.buffer);
-          uint32Array[index / 4] = abgrPalette[colourIndex];
-        });
-        context.putImageData(imageData, 0, 0);
-      }
-
-      requestAnimationFrame(renderLoop);
-    };
-
-    requestAnimationFrame(renderLoop);
-
     const centreOffsetX = (window.innerWidth - canvasWidth * scale) / 2;
     const centreOffsetY = (window.innerHeight - canvasWidth * scale) / 2;
     setOffset({ x: centreOffsetX, y: centreOffsetY });
 
     window.addEventListener("keydown", handleKeyDown);
   }, []);
+
+  // Start render loop when canvas had finished loading
+  useEffect(() => {
+    if (!isLoading && canvasRef.current && offscreenCanvasRef.current) {
+      const context = canvasRef.current.getContext("2d");
+      context.putImageData(imageDataRef.current, 0, 0);
+
+      // Start the render loop after the initial image is drawn
+      const renderLoop = () => {
+        const imageData = imageDataRef.current;
+        if (!imageData || !context) return;
+
+        const serverUpdates = updateQueueRef.current.splice(0);
+        const localUpdates = localUpdateQueueRef.current.splice(0);
+
+        const updates = [...serverUpdates, ...localUpdates];
+
+        if (updates.length > 0) {
+          updates.forEach(({ x, y, colourIndex }) => {
+            const index = (y * canvasWidth + x) * 4;
+            const uint32Array = new Uint32Array(imageData.data.buffer);
+            uint32Array[index / 4] = abgrPalette[colourIndex];
+          });
+          context.putImageData(imageData, 0, 0);
+        }
+
+        requestAnimationFrame(renderLoop);
+      };
+
+      requestAnimationFrame(renderLoop);
+    }
+  }, [isLoading]);
 
   const updatePixelBatch = async (batch) => {
     try {
@@ -373,13 +384,13 @@ const Canvas2 = ({ session }) => {
     };
   }, [handleKeyDown, handleKeyUp]);
 
-  // if (isLoading) {
-  //   return (
-  //     <div className="h-screen w-screen fixed flex items-center justify-center bg-white">
-  //       <div className="text-2xl">Loading...</div>
-  //     </div>
-  //   );
-  // }
+  if (isLoading) {
+    return (
+      <div className="h-screen w-screen fixed flex items-center justify-center">
+        <div className="text-2xl font-semibold text-black">Loading...</div>
+      </div>
+    );
+  }
 
   return (
     <>
