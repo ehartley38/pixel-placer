@@ -1,78 +1,113 @@
 import { useState } from "react";
+import { supabase } from "../../services/supabaseClient";
+import { InboxSVG } from "../ui/InboxSVG";
+import { PencilSquare } from "../ui/PencilSquare";
 
 export const AuthModal = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const [email, setEmail] = useState("");
+  const [email, setEmail] = useState(null);
+  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleLogin = async (event) => {
     event.preventDefault();
 
     setIsLoading(true);
     const { error } = await supabase.auth.signInWithOtp({ email });
-
     if (error) {
-      alert(error.error_description || error.message);
+        alert(error.error_description || error.message);
     } else {
-      alert("Check your email for the login link!");
+      setShowSuccess(true);
     }
     setIsLoading(false);
+  };
+
+  const handlePencilSquareClick = (event) => {
+    event.preventDefault();
+
+    setShowSuccess(false);
+    setEmail(null);
   };
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[1000]">
       <div className="bg-white p-4 rounded shadow-lg max-w-lg w-full">
-        <main id="content" role="main" class="w-full  max-w-md mx-auto p-6">
-          <div class="mt-7 bg-white  rounded-xl shadow-lg dark:bg-gray-800 dark:border-gray-700 border-2 border-indigo-300">
-            <div class="p-4 sm:p-7">
-              <div class="text-center">
-                <h1 class="block text-2xl font-bold text-gray-800 dark:text-white">
-                  Please Login to Continue
+        <div className="w-full  max-w-md mx-auto p-6">
+          <div className="mt-7 bg-white rounded-xl shadow-lg dark:bg-gray-800 dark:border-gray-700 border-2 border-indigo-300">
+            {showSuccess ? (
+              <div className="flex flex-col justify-center items-center p-5">
+                <InboxSVG />
+                <h1 className="text-3xl mt-5 font-semibold">
+                  Check your email
                 </h1>
+                <div>We emailed a magic link to</div>
+                <div className="flex items-center">
+                  <span className="font-bold mx-1">{email}</span>{" "}
+                  <PencilSquare
+                    handlePencilSquareClick={handlePencilSquareClick}
+                  />
+                </div>
+                <div className="mt-7">Click the link to log in or sign up.</div>
               </div>
-
-              <div class="mt-3">
-                <form>
-                  <div class="grid gap-y-4">
-                    <div>
-                      <label
-                        for="email"
-                        class="block text-sm font-bold ml-1 mb-2 text-black"
-                      >
-                        Email address
-                      </label>
-                      <div class="relative">
-                        <input
-                          type="email"
-                          id="email"
-                          name="email"
-                          class="py-3 px-4 block w-full border-2 border-gray-200 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 shadow-sm text-black"
-                          required
-                          aria-describedby="email-error"
-                        ></input>
-                      </div>
-                    </div>
-                    <button
-                      type="submit"
-                      class="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm dark:focus:ring-offset-gray-800"
-                        onClick={handleLogin}
-                    >
-                      Send Magic Link
-                    </button>
+            ) : (
+              <>
+                <div className="p-4 sm:p-7">
+                  <div className="text-center">
+                    <h1 className="block text-2xl font-bold text-gray-800 dark:text-white">
+                      Please Login to Continue
+                    </h1>
                   </div>
-                </form>
-              </div>
-            </div>
+
+                  <div className="mt-3">
+                    <form>
+                      <div className="grid gap-y-4">
+                        <div>
+                          <label
+                            htmlFor="email"
+                            className="block text-sm font-bold ml-1 mb-2 text-black"
+                          >
+                            Email address
+                          </label>
+                          <div className="relative">
+                            <input
+                              type="email"
+                              id="email"
+                              name="email"
+                              className="py-3 px-4 block w-full border-2 border-gray-200 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 shadow-sm text-black"
+                              required
+                              aria-describedby="email-error"
+                              onChange={(e) => setEmail(e.target.value)}
+                            ></input>
+                          </div>
+                        </div>
+                        <button
+                          type="submit"
+                          className="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm dark:focus:ring-offset-gray-800"
+                          onClick={handleLogin}
+                          disabled={isLoading}
+                        >
+                          {isLoading ? (
+                            <span>Loading</span>
+                          ) : (
+                            <span>Send Magic Link</span>
+                          )}
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              </>
+            )}
           </div>
 
           {/* View github */}
-          <p class="mt-3 flex justify-center items-center text-center divide-x divide-gray-300 dark:divide-gray-700">
+          <p className="mt-3 flex justify-center items-center text-center divide-x divide-gray-300 dark:divide-gray-700">
             <a
-              class="pr-3.5 inline-flex items-center gap-x-2 text-sm text-gray-600 decoration-2 hover:underline hover:text-blue-600 dark:text-gray-500 dark:hover:text-gray-200"
+              className="pr-3.5 inline-flex items-center gap-x-2 text-sm text-gray-600 decoration-2 hover:underline hover:text-blue-600 dark:text-gray-500 dark:hover:text-gray-200"
               href="https://github.com/ehartley38"
               target="_blank"
             >
               <svg
-                class="w-3.5 h-3.5"
+                className="w-3.5 h-3.5"
                 xmlns="http://www.w3.org/2000/svg"
                 width="16"
                 height="16"
@@ -84,31 +119,8 @@ export const AuthModal = () => {
               View Github
             </a>
           </p>
-        </main>
+        </div>
       </div>
-      {/* <div className="bg-red-500 p-4 rounded shadow-lg max-w-lg w-full">
-        <h1 className="header">R-Place</h1>
-        <p className="description">
-          Sign in via magic link with your email below
-        </p>
-        <form className="form-widget" onSubmit={handleLogin}>
-          <div>
-            <input
-              className="inputField"
-              type="email"
-              placeholder="Your email"
-              value={email}
-              required={true}
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
-          <div>
-            <button className={"button block"} disabled={isLoading}>
-              {isLoading ? <span>Loading</span> : <span>Send magic link</span>}
-            </button>
-          </div>
-        </form>
-      </div> */}
     </div>
   );
 };
