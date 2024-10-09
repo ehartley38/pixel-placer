@@ -1,11 +1,11 @@
 export const registerSocketEvents = (io) => {
   io.on("connection", (socket) => {
-    console.log("A user connected:", socket.id);
+    socket.on("pixels-update-batch", (data) => {
+      io.emit("canvas-update-batch", data);
+    });
 
-    socket.on("pixel-update", (data) => {
-      
-      console.log("Pixel update received:", data);
-      io.emit("canvas-update", data);
+    socket.on("get-connections", () => {
+      socket.emit("connections-count", io.engine.clientsCount);
     });
 
     socket.on("disconnect", () => {

@@ -13,21 +13,7 @@ const io = new SocketIOServer(server, {
   },
 });
 
-io.on("connection", (socket) => {
-  console.log("A userASD connected:", socket.id);
-
-  // socket.on("pixel-update", (data) => {
-  //   io.emit("canvas-update", data);
-  // });
-
-  socket.on("pixels-update-batch", (data) => {
-    io.emit("canvas-update-batch", data);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("A user disconnected");
-  });
-});
+registerSocketEvents(io);
 
 const port = process.env.PORT || 8080;
 

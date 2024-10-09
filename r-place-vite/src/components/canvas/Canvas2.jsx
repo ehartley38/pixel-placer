@@ -6,11 +6,13 @@ import ColourPicker from "./ColourPicker";
 import SelectedColour from "./SelectedColour";
 import { PixelMetadata } from "./PixelMetadata";
 import { Coordinates } from "./Coordinates";
+import { OnlineCount } from "./OnlineCount";
 
 // const canvasWidth = import.meta.env.VITE_CANVAS_WIDTH;
 const canvasWidth = 1000;
 const BATCH_INTERVAL = 500;
 const MAX_BATCH_SIZE = 100;
+const CONCURRENT_CONNECTIONS_INTERVAL = 15000;
 
 const abgrPalette = colourPalette.map(({ rgba }) => {
   const [r, g, b, a] = rgba;
@@ -47,6 +49,8 @@ const Canvas2 = ({ session }) => {
   const [pixelMetadata, setPixelMetadata] = useState(null);
   const [isSpaceDown, setIsSpaceDown] = useState(false);
   const [pixelBatch, setPixelBatch] = useState([]);
+  const [socketConnections, setSocketConnections] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     const socket = connectSocket();
@@ -57,11 +61,22 @@ const Canvas2 = ({ session }) => {
       });
     });
 
+    socket.emit("get-connections");
+
+    const intervalId = setInterval(() => {
+      socket.emit("get-connections");
+    }, CONCURRENT_CONNECTIONS_INTERVAL);
+
+    socket.on("connections-count", (connections) => {
+      setSocketConnections(connections);
+    });
+
     return () => {
       // Clean up on unmount
       if (socket.connected) {
         socket.disconnect();
       }
+      clearInterval(intervalId);
     };
   }, []);
 
@@ -69,6 +84,7 @@ const Canvas2 = ({ session }) => {
     imageDataRef.current = new ImageData(canvasWidth, canvasWidth);
 
     const fetchCanvasState = async () => {
+      setIsLoading(true);
       try {
         const canvasStateResponse = await axiosBinaryResInstance.get(
           "/get-canvas",
@@ -107,12 +123,15 @@ const Canvas2 = ({ session }) => {
         imageDataRef.current = imageData;
       } catch (err) {
         console.error("Error fetching canvas state:", err);
+      } finally {
+        setIsLoading(false);
       }
     };
 
     fetchCanvasState();
 
     const renderLoop = () => {
+      
       const canvas = canvasRef.current;
       const context = canvas.getContext("2d");
       const imageData = imageDataRef.current;
@@ -354,6 +373,14 @@ const Canvas2 = ({ session }) => {
     };
   }, [handleKeyDown, handleKeyUp]);
 
+  // if (isLoading) {
+  //   return (
+  //     <div className="h-screen w-screen fixed flex items-center justify-center bg-white">
+  //       <div className="text-2xl">Loading...</div>
+  //     </div>
+  //   );
+  // }
+
   return (
     <>
       <div className="h-screen w-screen fixed flex items-center justify-center bg-white">
@@ -366,7 +393,6 @@ const Canvas2 = ({ session }) => {
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
           tabIndex={0}
-          // onKeyDown={handleKeyDown}
         >
           <canvas
             id="canvas"
@@ -383,6 +409,7 @@ const Canvas2 = ({ session }) => {
               imageRendering: "pixelated",
             }}
           />
+          {/* Pixel outline */}
           {hoveredPixel.x !== -1 && hoveredPixel.y !== -1 && (
             <div
               style={{
@@ -397,6 +424,14 @@ const Canvas2 = ({ session }) => {
             />
           )}
 
+          {/* Online Count */}
+          {/* <div className="fixed top-0 left-0 z-[1000] bg-red-500">
+            <div className="flex flex-col">
+              <OnlineCount socketConnections={socketConnections} />
+            </div>
+          </div> */}
+
+          {/* Coordniates + Metadata */}
           {hoveredPixel.x !== -1 && hoveredPixel.y !== -1 && (
             <div className="fixed top-0 right-0 z-[1000]">
               <div className="flex flex-col items-end space-y-3 m-2">
