@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import { supabase } from "../../services/supabaseClient";
 import { InboxSVG } from "../ui/InboxSVG";
 import { PencilSquare } from "../ui/PencilSquare";
 
-export const AuthModal = () => {
+export const AuthModal = ({ setShowLoginModal }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState(null);
   const [showSuccess, setShowSuccess] = useState(false);
@@ -14,7 +14,7 @@ export const AuthModal = () => {
     setIsLoading(true);
     const { error } = await supabase.auth.signInWithOtp({ email });
     if (error) {
-        alert(error.error_description || error.message);
+      alert(error.error_description || error.message);
     } else {
       setShowSuccess(true);
     }
@@ -28,9 +28,21 @@ export const AuthModal = () => {
     setEmail(null);
   };
 
+  const handleOuterClick = useCallback((event) => {
+    if (event.target === event.currentTarget) {
+      setShowLoginModal(false);
+    }
+  }, []);
+
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[1000]">
-      <div className="bg-white p-4 rounded shadow-lg max-w-lg w-full">
+    <div
+      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[1000]"
+      onClick={handleOuterClick}
+    >
+      <div
+        className="bg-white p-4 rounded shadow-lg max-w-lg w-full"
+        onClick={(e) => e.stopPropagation()}
+      >
         <div className="w-full  max-w-md mx-auto p-6">
           <div className="mt-7 bg-white rounded-xl shadow-lg dark:bg-gray-800 dark:border-gray-700 border-2 border-indigo-300">
             {showSuccess ? (

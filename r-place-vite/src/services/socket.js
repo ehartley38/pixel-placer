@@ -6,16 +6,16 @@ let socket;
 
 export const connectSocket = () => {
   if (!socket) {
-    console.log("Connecting to socket server...");
+    // console.log("Connecting to socket server...");
 
     socket = io(SOCKET_URL, {});
 
     socket.on("connect", () => {
-      console.log("Connected to socket.io server");
+      // console.log("Connected to socket.io server");
     });
 
     socket.on("disconnect", () => {
-      console.log("Disconnected from socket.io server");
+      // console.log("Disconnected from socket.io server");
     });
   }
 

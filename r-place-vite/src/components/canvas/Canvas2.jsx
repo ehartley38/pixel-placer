@@ -308,8 +308,6 @@ const Canvas2 = ({ session }) => {
       }
     }
 
-    // Maybe check for valid session here
-
     if (isDragging) {
       if (!isSpaceDown) {
         setOffset({
@@ -335,22 +333,25 @@ const Canvas2 = ({ session }) => {
 
     // Show metadata logic
     // TODO - Cache metadata clientside
-    if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasWidth && session) {
+    if (x >= 0 && x < canvasWidth && y >= 0 && y < canvasWidth) {
       setHoveredPixel({ x, y });
-      clearTimeout(hoverTimerRef.current);
-      setShowMetadata(false);
 
-      hoverTimerRef.current = setTimeout(async () => {
-        try {
-          const res = await axiosInstance.get(`/get-pixel/${x}/${y}`);
-          const metadata = res.data.data[0];
+      if (session) {
+        clearTimeout(hoverTimerRef.current);
+        setShowMetadata(false);
 
-          setPixelMetadata(metadata);
-          setShowMetadata(true);
-        } catch (err) {
-          console.log(err);
-        }
-      }, 500);
+        hoverTimerRef.current = setTimeout(async () => {
+          try {
+            const res = await axiosInstance.get(`/get-pixel/${x}/${y}`);
+            const metadata = res.data.data[0];
+
+            setPixelMetadata(metadata);
+            setShowMetadata(true);
+          } catch (err) {
+            console.log(err);
+          }
+        }, 500);
+      }
     } else {
       setHoveredPixel({ x: -1, y: -1 });
       setShowMetadata(false);
@@ -462,16 +463,17 @@ const Canvas2 = ({ session }) => {
                 </div>
               </div>
             )}
-
-            <SelectedColour activeColour={activeColour} />
+            {!showLoginModal && <SelectedColour activeColour={activeColour} />}
           </div>
 
-          {showLoginModal && <AuthModal />}
+          {showLoginModal && <AuthModal setShowLoginModal={setShowLoginModal}/>}
         </div>
-        <ColourPicker
-          activeColour={activeColour}
-          setActiveColour={setActiveColour}
-        />
+        {!showLoginModal && (
+          <ColourPicker
+            activeColour={activeColour}
+            setActiveColour={setActiveColour}
+          />
+        )}
       </>
     )
   );
