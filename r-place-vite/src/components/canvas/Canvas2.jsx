@@ -89,7 +89,6 @@ const Canvas2 = ({ session }) => {
     offscreenCanvasRef.current.width = canvasWidth;
     offscreenCanvasRef.current.height = canvasWidth;
 
-
     const fetchCanvasState = async () => {
       setIsLoading(true);
       try {
@@ -392,7 +391,7 @@ const Canvas2 = ({ session }) => {
     );
   }
 
-  return (
+  return socketConnections &&  (
     <>
       <div className="h-screen w-screen fixed flex items-center justify-center bg-white">
         <div
@@ -436,16 +435,16 @@ const Canvas2 = ({ session }) => {
           )}
 
           {/* Online Count */}
-          {/* <div className="fixed top-0 left-0 z-[1000] bg-red-500">
+          <div className="fixed top-0 left-0 z-[1000] m-2">
             <div className="flex flex-col">
               <OnlineCount socketConnections={socketConnections} />
             </div>
-          </div> */}
+          </div>
 
           {/* Coordniates + Metadata */}
           {hoveredPixel.x !== -1 && hoveredPixel.y !== -1 && (
             <div className="fixed top-0 right-0 z-[1000]">
-              <div className="flex flex-col items-end space-y-3 m-2">
+              <div className="flex flex-col items-end space-y-2 m-2">
                 <Coordinates hoveredPixel={hoveredPixel} />
                 {showMetadata && pixelMetadata && (
                   <PixelMetadata

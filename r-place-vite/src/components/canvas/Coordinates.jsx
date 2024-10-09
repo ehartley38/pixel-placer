@@ -1,15 +1,6 @@
 export const Coordinates = ({ hoveredPixel }) => {
   return (
-    <div
-      style={{
-        backgroundColor: "rgba(0, 0, 0, 0.7)",
-        color: "white",
-        padding: "5px 10px",
-        borderRadius: "5px",
-        fontSize: "14px",
-        fontWeight: "bold",
-      }}
-    >
+    <div className="bg-gray-800  text-white px-2 py-1 rounded font-bold text-sm shadow-lg">
       ({hoveredPixel.x}, {hoveredPixel.y})
     </div>
   );
