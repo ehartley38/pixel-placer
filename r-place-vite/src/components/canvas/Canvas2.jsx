@@ -10,6 +10,7 @@ import { OnlineCount } from "./OnlineCount";
 import { AuthModal } from "../auth/AuthModal";
 import { UserNav } from "../profile/User-Nav";
 import { supabase } from "../../services/supabaseClient";
+import { useNavigate } from "react-router-dom";
 
 // const canvasWidth = import.meta.env.VITE_CANVAS_WIDTH;
 const canvasWidth = 1000;
@@ -41,6 +42,8 @@ const Canvas2 = ({ session }) => {
   const localUpdateQueueRef = useRef([]);
   const pixelBatchSetRef = useRef(new Set());
 
+  const navigate = useNavigate()
+
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -63,9 +66,7 @@ const Canvas2 = ({ session }) => {
   // Get user data
   useEffect(() => {
     const fetchUserData = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+      const { user } = session
 
       if (user) {
         const { data: profileData, error: profileError } = await supabase
@@ -429,6 +430,8 @@ const Canvas2 = ({ session }) => {
     if (error) {
     } else {
       setUserData(null);
+      navigate("/")
+      // window.location.reload()
     }
   };
 

@@ -35,7 +35,7 @@ function App() {
       <Route path="/" element={<Canvas2 session={session} />} />
       <Route path="/login" element={<Auth session={session} />} />
       <Route element={<ProtectedRoute session={session} />}>
-        <Route path="/account" element={<Account session={session} />} />
+        <Route path="/profile" element={<Account session={session} />} />
       </Route>
     </Routes>
   );

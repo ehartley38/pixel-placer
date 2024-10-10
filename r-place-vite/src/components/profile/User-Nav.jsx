@@ -11,8 +11,15 @@ import {
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 export const UserNav = ({ userData, handleLogOut }) => {
+  const navigate = useNavigate();
+
+  const handleProfileClick = () => {
+    navigate("/profile");
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -38,7 +45,9 @@ export const UserNav = ({ userData, handleLogOut }) => {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuGroup>
-          <DropdownMenuItem>Profile</DropdownMenuItem>
+          <div onClick={handleProfileClick}>
+            <DropdownMenuItem>Profile</DropdownMenuItem>
+          </div>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
         <div onClick={handleLogOut}>
