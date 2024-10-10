@@ -10,9 +10,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export default function Account({}) {
   const [loading, setLoading] = useState(true);
-  // const [username, setUsername] = useState(null);
-  // const [website, setWebsite] = useState(null);
-  // const [avatar_url, setAvatarUrl] = useState(null);
   const [userData, setUserData] = useState(null);
 
   const { session } = useSession();
@@ -51,7 +48,7 @@ export default function Account({}) {
     };
   }, [session]);
 
-  async function updateProfile(event, avatarUrl) {
+  const handleUpdateProfile = async (event) => {
     event.preventDefault();
 
     setLoading(true);
@@ -59,9 +56,7 @@ export default function Account({}) {
 
     const updates = {
       id: user.id,
-      username,
-      website,
-      avatar_url: avatarUrl,
+      username: userData.username,
       updated_at: new Date(),
     };
 
@@ -69,11 +64,9 @@ export default function Account({}) {
 
     if (error) {
       alert(error.message);
-    } else {
-      setAvatarUrl(avatarUrl);
     }
     setLoading(false);
-  }
+  };
 
   return (
     userData && (
@@ -91,30 +84,30 @@ export default function Account({}) {
               <CardContent className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="name">Username</Label>
-                  <Input
-                    id="username"
-                    placeholder="E.g. Jane-Doe"
-                    defaultValue={userData.username}
-                  />
+                  <input
+                    className="py-3 px-4 block w-full border-2 border-gray-200 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 shadow-sm text-black"
+                    value={userData.username}
+                    onChange={(e) =>
+                      setUserData((prevData) => ({
+                        ...prevData,
+                        username: e.target.value,
+                      }))
+                    }
+                  ></input>
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email">Email</Label>
-                  <Input id="email" placeholder={userData.email} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Biography</Label>
-                  <Textarea
-                    id="bio"
-                    placeholder="Enter your bio"
-                    className="mt-1"
-                    style={{ minHeight: "100px" }}
-                  />
+                  <input
+                    className="py-3 px-4 block w-full border-2 border-gray-200 rounded-md text-sm shadow-sm text-gray-400 focus:outline-none"
+                    value={userData.email}
+                    readOnly
+                  ></input>
                 </div>
               </CardContent>
             </Card>
           </div>
-          <div className="pt-6">
-            <Button>Save</Button>
+          <div className="pt-6" onClick={handleUpdateProfile}>
+            <Button disabled={loading}>Save</Button>
           </div>
         </div>
       </div>
