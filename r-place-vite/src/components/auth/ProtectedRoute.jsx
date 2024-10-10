@@ -7,7 +7,7 @@ const ProtectedRoute = () => {
   const { session } = useSession();
 
   if (!session || !session.user) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+    return <Navigate to="/" state={{ from: location }} replace />;
   }
 
   return <Outlet context={{ session }} />;
