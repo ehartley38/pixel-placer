@@ -44,7 +44,7 @@ const Layout = ({ children }) => {
     } else {
       setUserData(null);
       navigate("/");
-      window.location.reload()
+      window.location.reload();
     }
   };
 
