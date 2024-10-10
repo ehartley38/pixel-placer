@@ -8,6 +8,8 @@ import { PixelMetadata } from "./PixelMetadata";
 import { Coordinates } from "./Coordinates";
 import { OnlineCount } from "./OnlineCount";
 import { AuthModal } from "../auth/AuthModal";
+import { UserNav } from "../profile/User-Nav";
+import { supabase } from "../../services/supabaseClient";
 
 // const canvasWidth = import.meta.env.VITE_CANVAS_WIDTH;
 const canvasWidth = 1000;
@@ -54,6 +56,35 @@ const Canvas2 = ({ session }) => {
   const [socketConnections, setSocketConnections] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [userData, setUserData] = useState(null);
+
+  // Get user data
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const {
+        data: { user },
+      } = await supabase.auth.getUser();
+
+      if (user) {
+        const { data: profileData, error: profileError } = await supabase
+          .from("profiles")
+          .select("username")
+          .eq("id", user.id)
+          .single();
+
+        if (profileData) {
+          const userData = {
+            email: user.email,
+            username: profileData.username,
+          };
+
+          setUserData(userData);
+        }
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   // Handle socket connections
   useEffect(() => {
@@ -399,7 +430,8 @@ const Canvas2 = ({ session }) => {
   }
 
   return (
-    socketConnections && (
+    socketConnections &&
+    userData && (
       <>
         <div className="h-screen w-screen fixed flex items-center justify-center bg-white">
           <div
@@ -442,31 +474,34 @@ const Canvas2 = ({ session }) => {
               />
             )}
 
-            {/* Online Count */}
+            {/* Online Count +  Coordniates + Metadata*/}
             <div className="fixed top-0 left-0 z-[1000] m-2">
-              <div className="flex flex-col">
+              <div className="flex flex-col items-start space-y-2">
                 <OnlineCount socketConnections={socketConnections} />
+                {hoveredPixel.x !== -1 && hoveredPixel.y !== -1 && (
+                  <>
+                    <Coordinates hoveredPixel={hoveredPixel} />
+                    {showMetadata && pixelMetadata && (
+                      <PixelMetadata
+                        hoveredPixel={hoveredPixel}
+                        pixelMetadata={pixelMetadata}
+                      />
+                    )}
+                  </>
+                )}
               </div>
             </div>
 
-            {/* Coordniates + Metadata */}
-            {hoveredPixel.x !== -1 && hoveredPixel.y !== -1 && (
-              <div className="fixed top-0 right-0 z-[1000]">
-                <div className="flex flex-col items-end space-y-2 m-2">
-                  <Coordinates hoveredPixel={hoveredPixel} />
-                  {showMetadata && pixelMetadata && (
-                    <PixelMetadata
-                      hoveredPixel={hoveredPixel}
-                      pixelMetadata={pixelMetadata}
-                    />
-                  )}
-                </div>
-              </div>
-            )}
+            <div className="fixed top-0 right-0 z-[1000] m-2">
+              <UserNav userData={userData} />
+            </div>
+
             {!showLoginModal && <SelectedColour activeColour={activeColour} />}
           </div>
 
-          {showLoginModal && <AuthModal setShowLoginModal={setShowLoginModal}/>}
+          {showLoginModal && (
+            <AuthModal setShowLoginModal={setShowLoginModal} />
+          )}
         </div>
         {!showLoginModal && (
           <ColourPicker
