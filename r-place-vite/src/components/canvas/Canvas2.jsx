@@ -56,6 +56,8 @@ const Canvas2 = ({ session }) => {
   const [socketConnections, setSocketConnections] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [showLoginModal, setShowLoginModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [email, setEmail] = useState("");
   const [userData, setUserData] = useState(null);
 
   // Get user data
@@ -421,6 +423,15 @@ const Canvas2 = ({ session }) => {
     };
   }, [handleKeyDown, handleKeyUp]);
 
+  const handleLogOut = async () => {
+    const { error } = await supabase.auth.signOut();
+
+    if (error) {
+    } else {
+      setUserData(null);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="h-screen w-screen fixed flex items-center justify-center">
@@ -430,8 +441,7 @@ const Canvas2 = ({ session }) => {
   }
 
   return (
-    socketConnections &&
-    userData && (
+    socketConnections && (
       <>
         <div className="h-screen w-screen fixed flex items-center justify-center bg-white">
           <div
@@ -493,14 +503,22 @@ const Canvas2 = ({ session }) => {
             </div>
 
             <div className="fixed top-0 right-0 z-[1000] m-2">
-              <UserNav userData={userData} />
+              {userData && (
+                <UserNav userData={userData} handleLogOut={handleLogOut} />
+              )}
             </div>
 
             {!showLoginModal && <SelectedColour activeColour={activeColour} />}
           </div>
 
           {showLoginModal && (
-            <AuthModal setShowLoginModal={setShowLoginModal} />
+            <AuthModal
+              setShowLoginModal={setShowLoginModal}
+              showSuccessModal={showSuccessModal}
+              setShowSuccessModal={setShowSuccessModal}
+              setEmail={setEmail}
+              email={email}
+            />
           )}
         </div>
         {!showLoginModal && (

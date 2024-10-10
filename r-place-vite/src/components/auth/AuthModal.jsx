@@ -1,12 +1,16 @@
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../../services/supabaseClient";
 import { InboxSVG } from "../ui/InboxSVG";
 import { PencilSquare } from "../ui/PencilSquare";
 
-export const AuthModal = ({ setShowLoginModal }) => {
+export const AuthModal = ({
+  setShowLoginModal,
+  setShowSuccessModal,
+  showSuccessModal,
+  setEmail,
+  email,
+}) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [email, setEmail] = useState(null);
-  const [showSuccess, setShowSuccess] = useState(false);
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -16,7 +20,7 @@ export const AuthModal = ({ setShowLoginModal }) => {
     if (error) {
       alert(error.error_description || error.message);
     } else {
-      setShowSuccess(true);
+      setShowSuccessModal(true);
     }
     setIsLoading(false);
   };
@@ -24,15 +28,15 @@ export const AuthModal = ({ setShowLoginModal }) => {
   const handlePencilSquareClick = (event) => {
     event.preventDefault();
 
-    setShowSuccess(false);
-    setEmail(null);
+    setShowSuccessModal(false);
+    setEmail("");
   };
 
-  const handleOuterClick = useCallback((event) => {
+  const handleOuterClick = (event) => {
     if (event.target === event.currentTarget) {
       setShowLoginModal(false);
     }
-  }, []);
+  };
 
   return (
     <div
@@ -45,7 +49,7 @@ export const AuthModal = ({ setShowLoginModal }) => {
       >
         <div className="w-full  max-w-md mx-auto p-6">
           <div className="mt-7 bg-white rounded-xl shadow-lg dark:bg-gray-800 dark:border-gray-700 border-2 border-indigo-300">
-            {showSuccess ? (
+            {showSuccessModal ? (
               <div className="flex flex-col justify-center items-center p-5">
                 <InboxSVG />
                 <h1 className="text-3xl mt-5 font-semibold">
@@ -87,6 +91,7 @@ export const AuthModal = ({ setShowLoginModal }) => {
                               className="py-3 px-4 block w-full border-2 border-gray-200 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 shadow-sm text-black"
                               required
                               aria-describedby="email-error"
+                              value={email}
                               onChange={(e) => setEmail(e.target.value)}
                             ></input>
                           </div>
