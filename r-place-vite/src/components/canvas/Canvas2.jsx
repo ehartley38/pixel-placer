@@ -11,6 +11,7 @@ import { AuthModal } from "../auth/AuthModal";
 import { UserNav } from "../profile/User-Nav";
 import { supabase } from "../../services/supabaseClient";
 import { useNavigate } from "react-router-dom";
+import { useSession } from "../../context/sessionProvider";
 
 // const canvasWidth = import.meta.env.VITE_CANVAS_WIDTH;
 const canvasWidth = 1000;
@@ -31,7 +32,7 @@ const arrowKeyStep = 10;
 // TODO - Socket batch handling
 // TODO - Add a max batch size to prevent very large updates
 
-const Canvas2 = ({ session }) => {
+const Canvas2 = ({}) => {
   const canvasRef = useRef(null);
   const offscreenCanvasRef = useRef(null);
   const containerRef = useRef(null);
@@ -42,7 +43,8 @@ const Canvas2 = ({ session }) => {
   const localUpdateQueueRef = useRef([]);
   const pixelBatchSetRef = useRef(new Set());
 
-  const navigate = useNavigate()
+  const navigate = useNavigate();
+  const { session } = useSession();
 
   const [scale, setScale] = useState(1);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -61,33 +63,33 @@ const Canvas2 = ({ session }) => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [email, setEmail] = useState("");
-  const [userData, setUserData] = useState(null);
+  // const [userData, setUserData] = useState(null);
 
   // Get user data
-  useEffect(() => {
-    const fetchUserData = async () => {
-      const { user } = session
+  // useEffect(() => {
+  //   const fetchUserData = async () => {
+  //     const { user } = session
 
-      if (user) {
-        const { data: profileData, error: profileError } = await supabase
-          .from("profiles")
-          .select("username")
-          .eq("id", user.id)
-          .single();
+  //     if (user) {
+  //       const { data: profileData, error: profileError } = await supabase
+  //         .from("profiles")
+  //         .select("username")
+  //         .eq("id", user.id)
+  //         .single();
 
-        if (profileData) {
-          const userData = {
-            email: user.email,
-            username: profileData.username,
-          };
+  //       if (profileData) {
+  //         const userData = {
+  //           email: user.email,
+  //           username: profileData.username,
+  //         };
 
-          setUserData(userData);
-        }
-      }
-    };
+  //         setUserData(userData);
+  //       }
+  //     }
+  //   };
 
-    fetchUserData();
-  }, []);
+  //   fetchUserData();
+  // }, []);
 
   // Handle socket connections
   useEffect(() => {
@@ -424,16 +426,16 @@ const Canvas2 = ({ session }) => {
     };
   }, [handleKeyDown, handleKeyUp]);
 
-  const handleLogOut = async () => {
-    const { error } = await supabase.auth.signOut();
+  // const handleLogOut = async () => {
+  //   const { error } = await supabase.auth.signOut();
 
-    if (error) {
-    } else {
-      setUserData(null);
-      navigate("/")
-      // window.location.reload()
-    }
-  };
+  //   if (error) {
+  //   } else {
+  //     setUserData(null);
+  //     navigate("/")
+  //     // window.location.reload()
+  //   }
+  // };
 
   if (isLoading) {
     return (
@@ -505,11 +507,11 @@ const Canvas2 = ({ session }) => {
               </div>
             </div>
 
-            <div className="fixed top-0 right-0 z-[1000] m-2">
+            {/* <div className="fixed top-0 right-0 z-[1000] m-2">
               {userData && (
                 <UserNav userData={userData} handleLogOut={handleLogOut} />
               )}
-            </div>
+            </div> */}
 
             {!showLoginModal && <SelectedColour activeColour={activeColour} />}
           </div>
