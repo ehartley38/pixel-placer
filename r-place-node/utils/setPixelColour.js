@@ -1,4 +1,5 @@
 import Redis from "ioredis";
+import { getRedisClient } from "./initialiseRedis.js";
 
 const canvasWidth = process.env.CANVAS_WIDTH
 
@@ -10,7 +11,7 @@ export const setPixelColour = async (x, y, colour) => {
     throw new Error("Invalid colour");
   }
 
-  const redis = new Redis({});
+  const redis = getRedisClient()
 
   const offset = y * canvasWidth + x;
   await redis.bitfield("canvas_bitmap", "SET", "u8", `#${offset}`, colour);

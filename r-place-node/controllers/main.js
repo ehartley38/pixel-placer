@@ -1,6 +1,5 @@
 import { Router } from "express";
 import "dotenv/config";
-import Redis from "ioredis";
 import { setPixelColour } from "../utils/setPixelColour.js";
 import { getPixelColour } from "../utils/getPixelColour.js";
 import { getCanvasState } from "../utils/getCanvasState.js";
@@ -13,7 +12,6 @@ const METADATA_BATCH_SIZE = 500;
 const METADATA_BATCH_INTERVAL = 5000;
 
 const mainRouter = Router();
-const redis = new Redis({});
 
 const pixelQueue = new Queue({ autostart: true, concurrency: 1 });
 let queuedPixels = [];
@@ -38,7 +36,7 @@ mainRouter.get(
 
     try {
       // const colour = await getPixelColour(x, y);
-      console.log("Getting pixel metadata");
+      // TODO - Fix get pixel metadata call when cursor falls off page
 
       const { data, error } = await supabase
         .from("canvas_metadata")
@@ -100,7 +98,7 @@ const processQueuedPixels = async () => {
       yPos: pixel.y,
       colour: pixel.colourIndex,
       createdBy: pixel.userName,
-      createdDate: formatDate(Date.now()),
+      createdDate: Date.now(),
     }));
 
     console.log("Updating pixels batch");

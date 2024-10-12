@@ -1,16 +1,16 @@
-import express from 'express'
-import cors from "cors"
-import mainRouter from './controllers/main.js'
-import { corsOptions } from './utils/corsOptions.js'
-import Redis from 'redis'
+import express from "express";
+import cors from "cors";
+import mainRouter from "./controllers/main.js";
+import { corsOptions } from "./utils/corsOptions.js";
+import { initialiseRedis } from "./utils/initialiseRedis.js";
 
-const redisClient = Redis.createClient()
+const app = express();
 
-const app = express()
+initialiseRedis();
 
-app.use(cors(corsOptions))
-app.use(express.json())
+app.use(cors(corsOptions));
+app.use(express.json());
 
-app.use("/api/", mainRouter)
+app.use("/api/", mainRouter);
 
-export default app
+export default app;
