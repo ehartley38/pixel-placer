@@ -1,0 +1,19 @@
+services:
+  app:
+    build: 
+      context: .
+      dockerfile: Dockerfile
+      image: pixel-placer-docker:latest
+    container_name: pixel-placer-docker
+    environment:
+      - SUPABASE_URL=${SUPABASE_URL}
+      - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
+      - SUPABASE_SERVICE_KEY=${SUPABASE_SERVICE_KEY}
+      - SUPABASE_JWT_SECRET=${SUPABASE_JWT_SECRET}
+      - CANVAS_WIDTH=${CANVAS_WIDTH}
+      - REDIS_CLOUD_PASSWORD=${REDIS_CLOUD_PASSWORD}
+      - REDIS_CLOUD_HOST=${REDIS_CLOUD_HOST}
+    env_file:
+      - ./.env
+    ports:
+      - "8080:8080"
