@@ -1,10 +1,12 @@
 services:
   app:
-    build: 
-      context: .
-      dockerfile: Dockerfile
-      image: pixel-placer-docker:latest
+    image: registry.digitalocean.com/side-projects/side-projects:pixel-placer-node
+    # build: 
+    #   context: .
+    #   dockerfile: Dockerfile
+    #   image: pixel-placer-docker:latest
     container_name: pixel-placer-docker
+    restart: always
     environment:
       - SUPABASE_URL=${SUPABASE_URL}
       - SUPABASE_ANON_KEY=${SUPABASE_ANON_KEY}
