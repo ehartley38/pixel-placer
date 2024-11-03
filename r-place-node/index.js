@@ -15,7 +15,7 @@ const io = new SocketIOServer(server, {
 
 registerSocketEvents(io);
 
-const port = process.env.PORT || 8080;
+const port = process.env.PORT || 80;
 
 server.listen(port, () => {
   console.log(`Server running on port ${port}`);
