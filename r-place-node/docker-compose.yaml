@@ -1,10 +1,6 @@
 services:
-  app:
+  pixel-placer-app:
     image: registry.digitalocean.com/side-projects/side-projects:pixel-placer-node
-    # build: 
-    #   context: .
-    #   dockerfile: Dockerfile
-    #   image: pixel-placer-docker:latest
     container_name: pixel-placer-docker
     restart: always
     environment:
@@ -19,3 +15,23 @@ services:
       - ./.env
     ports:
       - "8080:8080"
+    networks:
+      - pixel-placer-network
+    
+  nginx:
+    image: nginx:latest
+    container_name: nginx-container
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - /path/to/your/certificates:/etc/ssl
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - pixel-placer-network
+
+  networks:
+    pixel-placer-network:
+      driver: bridge
+
+
