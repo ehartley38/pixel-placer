@@ -63,7 +63,7 @@ const Canvas2 = ({}) => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [email, setEmail] = useState("");
-  // const [userData, setUserData] = useState(null);
+  const [userData, setUserData] = useState(null);
 
   // Get user data
   // useEffect(() => {
@@ -137,7 +137,10 @@ const Canvas2 = ({}) => {
           }
         );
 
+        
         const canvasState = new Uint8Array(canvasStateResponse.data);
+        console.log(canvasState);
+
 
         const offscreenContext = offscreenCanvasRef.current.getContext("2d");
 

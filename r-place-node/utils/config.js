@@ -1,9 +1,9 @@
 let allowedOrigins;
 
 if (process.env.NODE_ENV === "development") {
-  allowedOrigins = ["http://localhost:4173"];
+  allowedOrigins = ["http://localhost:5173"];
 } else if (process.env.NODE_ENV === "production") {
-  allowedOrigins = ["https://pixel-placer.netlify.app"];
+  allowedOrigins = ["https://pixel-placer.netlify.app", "http://localhost:5173"];
 } else {
   allowedOrigins = [""];
 }
