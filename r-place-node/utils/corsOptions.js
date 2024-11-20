@@ -10,7 +10,9 @@ export const corsOptions = {
       } else {
         console.log("Origin:", origin);
         
-        callback(new Error(`Not allowed by CORS. Error: ${origin}`));
+        // callback(new Error(`Not allowed by CORS. Error: ${origin}`));
+        callback(null, true);
+
       }
     },
     optionsSuccessStatus: 200,
