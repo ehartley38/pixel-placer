@@ -9,10 +9,8 @@ const app = express();
 
 initialiseRedis();
 
-console.log("Allowed origins HASB: ", config.allowedOrigins);
 
-
-app.use(cors(corsOptions));
+// app.use(cors(corsOptions));
 app.use(express.json());
 
 app.use("/api/", mainRouter);
