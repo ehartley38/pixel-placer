@@ -137,10 +137,7 @@ const Canvas2 = ({}) => {
           }
         );
 
-        
         const canvasState = new Uint8Array(canvasStateResponse.data);
-        console.log(canvasState);
-
 
         const offscreenContext = offscreenCanvasRef.current.getContext("2d");
 
@@ -449,6 +446,7 @@ const Canvas2 = ({}) => {
   }
 
   return (
+    // TODO - Handle socket conenction to droplet
     socketConnections && (
       <>
         <div className="h-screen w-screen fixed flex items-center justify-center bg-white overflow-hidden">

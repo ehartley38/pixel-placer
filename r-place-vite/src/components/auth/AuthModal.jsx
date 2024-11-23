@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { supabase } from "../../services/supabaseClient";
 import { InboxSVG } from "../ui/InboxSVG";
 import { PencilSquare } from "../ui/PencilSquare";
+import { axiosInstance } from "../../services/axios";
+import Turnstile from "./Turnstyle";
 
 export const AuthModal = ({
   setShowLoginModal,
@@ -11,16 +13,41 @@ export const AuthModal = ({
   email,
 }) => {
   const [isLoading, setIsLoading] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
+  const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY
 
   const handleLogin = async (event) => {
     event.preventDefault();
 
     setIsLoading(true);
-    const { error } = await supabase.auth.signInWithOtp({ email });
-    if (error) {
-      alert(error.error_description || error.message);
-    } else {
-      setShowSuccessModal(true);
+
+    const turnstileToken = window.turnstile.getResponse();
+
+    if (!turnstileToken) {
+      alert("Please complete the CAPTCHA");
+      setIsLoading(false);
+      return;
+    }
+
+    try {
+      const response = await axiosInstance.get("/auth/verify-turnstile", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          turnstileToken,
+          email,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        await supabase.auth.signInWithOtp({ email });
+      } else {
+        alert(data.message || "Login failed");
+      }
+    } catch (err) {
+      alert(err.error_description || err.message);
     }
     setIsLoading(false);
   };
@@ -69,7 +96,7 @@ export const AuthModal = ({
                 <div className="p-4 sm:p-7">
                   <div className="text-center">
                     <h1 className="block text-2xl font-bold text-gray-800 dark:text-white">
-                      Please Login to Continue
+                      Please Login or Sign-Up to Continue
                     </h1>
                   </div>
 
@@ -96,6 +123,10 @@ export const AuthModal = ({
                             ></input>
                           </div>
                         </div>
+                        <Turnstile
+                          siteKey={siteKey}
+                          onVerify={setTurnstileToken}
+                        />
                         <button
                           type="submit"
                           className="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm dark:focus:ring-offset-gray-800"
