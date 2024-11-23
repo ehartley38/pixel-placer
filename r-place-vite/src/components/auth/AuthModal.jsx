@@ -14,7 +14,7 @@ export const AuthModal = ({
 }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [turnstileToken, setTurnstileToken] = useState("");
-  const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY
+  const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
   const handleLogin = async (event) => {
     event.preventDefault();
@@ -31,25 +31,20 @@ export const AuthModal = ({
 
     try {
       const response = await axiosInstance.post("/auth/verify-turnstile", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          turnstileToken,
-          email,
-        }),
+        turnstileToken: turnstileToken,
       });
 
-      const data = await response.json();
-
-      if (data.success) {
+      if (response.status == 200) {
         await supabase.auth.signInWithOtp({ email });
       } else {
-        alert(data.message || "Login failed");
+        alert(response.message || "Login failed");
       }
     } catch (err) {
       alert(err.error_description || err.message);
+    } finally {
+      setIsLoading(false);
+      setShowSuccessModal(true);
     }
-    setIsLoading(false);
   };
 
   const handlePencilSquareClick = (event) => {

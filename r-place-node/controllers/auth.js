@@ -4,9 +4,9 @@ const authRouter = Router();
 const TURNSTILE_SECRET_KEY = process.env.TURNSTILE_SECRET_KEY;
 
 authRouter.post("/verify-turnstile", async (req, res) => {
-  const { turnstileToken, email } = req.body;
+  const { turnstileToken } = req.body;
 
-  if (!turnstileToken || !email) {
+  if (!turnstileToken) {
     return res
       .status(400)
       .json({ success: false, message: "Missing Turnstile token or email" });
@@ -25,9 +25,9 @@ authRouter.post("/verify-turnstile", async (req, res) => {
       }
     );
 
-    const outcome = await verifyResponse.json();
+    const response = await verifyResponse.json();
 
-    if (!outcome.success) {
+    if (!response.success) {
       return res
         .status(400)
         .json({ success: false, message: "Turnstile verification failed" });
@@ -39,8 +39,8 @@ authRouter.post("/verify-turnstile", async (req, res) => {
   } catch (err) {
     res
       .status(500)
-      .json({ success: false, message: "Server error", error: error.message });
+      .json({ success: false, message: "Server error", error: err.message });
   }
 });
 
-export default authRouter
+export default authRouter;
