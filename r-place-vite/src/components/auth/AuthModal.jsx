@@ -30,7 +30,7 @@ export const AuthModal = ({
     }
 
     try {
-      const response = await axiosInstance.get("/auth/verify-turnstile", {
+      const response = await axiosInstance.post("/auth/verify-turnstile", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
