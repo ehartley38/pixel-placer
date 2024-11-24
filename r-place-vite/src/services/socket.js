@@ -5,8 +5,8 @@ const SOCKET_URL = import.meta.env.VITE_SOCKET_URL;
 let socket;
 
 export const connectSocket = () => {
-  if (!socket) {
-    // console.log("Connecting to socket server...");
+  
+  if (!socket || socket.connected != true) {
 
     socket = io(SOCKET_URL, {});
 

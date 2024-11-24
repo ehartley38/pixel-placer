@@ -8,9 +8,6 @@ import { PixelMetadata } from "./PixelMetadata";
 import { Coordinates } from "./Coordinates";
 import { OnlineCount } from "./OnlineCount";
 import { AuthModal } from "../auth/AuthModal";
-import { UserNav } from "../profile/User-Nav";
-import { supabase } from "../../services/supabaseClient";
-import { useNavigate } from "react-router-dom";
 import { useSession } from "../../context/sessionProvider";
 
 // const canvasWidth = import.meta.env.VITE_CANVAS_WIDTH;
@@ -43,7 +40,6 @@ const Canvas2 = ({}) => {
   const localUpdateQueueRef = useRef([]);
   const pixelBatchSetRef = useRef(new Set());
 
-  const navigate = useNavigate();
   const { session } = useSession();
 
   const [scale, setScale] = useState(1);
@@ -63,33 +59,6 @@ const Canvas2 = ({}) => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [email, setEmail] = useState("");
-  const [userData, setUserData] = useState(null);
-
-  // Get user data
-  // useEffect(() => {
-  //   const fetchUserData = async () => {
-  //     const { user } = session
-
-  //     if (user) {
-  //       const { data: profileData, error: profileError } = await supabase
-  //         .from("profiles")
-  //         .select("username")
-  //         .eq("id", user.id)
-  //         .single();
-
-  //       if (profileData) {
-  //         const userData = {
-  //           email: user.email,
-  //           username: profileData.username,
-  //         };
-
-  //         setUserData(userData);
-  //       }
-  //     }
-  //   };
-
-  //   fetchUserData();
-  // }, []);
 
   // Handle socket connections
   useEffect(() => {
@@ -426,17 +395,6 @@ const Canvas2 = ({}) => {
     };
   }, [handleKeyDown, handleKeyUp]);
 
-  // const handleLogOut = async () => {
-  //   const { error } = await supabase.auth.signOut();
-
-  //   if (error) {
-  //   } else {
-  //     setUserData(null);
-  //     navigate("/")
-  //     // window.location.reload()
-  //   }
-  // };
-
   if (isLoading) {
     return (
       <div className="h-screen w-screen fixed flex items-center justify-center">
@@ -445,8 +403,16 @@ const Canvas2 = ({}) => {
     );
   }
 
+  if (!socketConnections) {
+    return (
+      <div className="h-screen w-screen fixed flex items-center justify-center">
+        <div className="text-2xl font-semibold text-black">Connecting...</div>
+      </div>
+    );
+  }
+
   return (
-    socketConnections && (
+    (
       <>
         <div className="h-screen w-screen fixed flex items-center justify-center bg-white overflow-hidden">
           <div
@@ -506,12 +472,6 @@ const Canvas2 = ({}) => {
                 )}
               </div>
             </div>
-
-            {/* <div className="fixed top-0 right-0 z-[1000] m-2">
-              {userData && (
-                <UserNav userData={userData} handleLogOut={handleLogOut} />
-              )}
-            </div> */}
 
             {!showLoginModal && <SelectedColour activeColour={activeColour} />}
           </div>
