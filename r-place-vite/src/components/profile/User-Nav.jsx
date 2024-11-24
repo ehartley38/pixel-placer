@@ -20,7 +20,7 @@ export const UserNav = ({ userData, handleLogOut }) => {
     navigate("/profile");
   };
 
-  return (
+  return userData && (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" className="relative h-8 w-8 rounded-full">

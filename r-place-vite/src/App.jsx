@@ -35,7 +35,6 @@ function App() {
     <Layout>
       <Routes>
         <Route path="/" element={<Canvas2 />} />
-        {/* <Route path="/login" element={<Auth session={session} />} /> */}
         <Route element={<ProtectedRoute />}>
           <Route path="/profile" element={<Account />} />
         </Route>

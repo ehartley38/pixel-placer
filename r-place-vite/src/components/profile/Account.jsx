@@ -7,12 +7,16 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 
 export default function Account({}) {
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState(null);
 
   const { session } = useSession();
+  const navigate = useNavigate();
+  const { toast } = useToast();
 
   useEffect(() => {
     let ignore = false;
@@ -60,32 +64,61 @@ export default function Account({}) {
       updated_at: new Date(),
     };
 
-    const { error } = await supabase.from("profiles").upsert(updates);
+    try {
+       await supabase.from("profiles").upsert(updates);
 
-    if (error) {
-      alert(error.message);
+      toast({
+        title: "Profile updated",
+        description: "Your changes have been saved successfully.",
+        variant: "default",
+        className: "bg-green-50 border-green-200",
+      });
+    } catch (err) {
+      toast({
+        title: "Error",
+        description: "Failed to update profile. Please try again.",
+        variant: "destructive",
+      });
     }
+
     setLoading(false);
+  };
+
+  const handleBack = () => {
+    navigate("/");
   };
 
   return (
     userData && (
-      <div className="">
-        <div className="p-5 space-y-6 sm:px-6">
-          <header className="space-y-2">
-            <div className="flex items-center space-x-3">
-              <div className="">
-                <h1 className="text-2xl font-bold">Your Profile</h1>
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-3xl mx-auto p-4 sm:p-6 lg:p-8">
+          <header className="mb-8">
+            <div className="flex items-center space-x-4">
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">
+                  Your Profile
+                </h1>
+                <p className="text-sm text-gray-500 mt-1">
+                  Manage your account settings and preferences
+                </p>
               </div>
             </div>
           </header>
-          <div className="">
-            <Card className="p-4">
-              <CardContent className="space-y-6">
-                <div className="space-y-2">
-                  <Label htmlFor="name">Username</Label>
+
+          <Card className="shadow-lg">
+            <CardContent className="p-6">
+              <div className="space-y-6">
+                <div>
+                  <Label
+                    htmlFor="username"
+                    className="text-sm font-medium text-gray-700 mb-1 block"
+                  >
+                    Username
+                  </Label>
                   <input
-                    className="py-3 px-4 block w-full border-2 border-gray-200 rounded-md text-sm focus:border-blue-500 focus:ring-blue-500 shadow-sm text-black"
+                    id="username"
+                    type="text"
+                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-150 ease-in-out text-gray-900"
                     value={userData.username}
                     onChange={(e) =>
                       setUserData((prevData) => ({
@@ -93,70 +126,44 @@ export default function Account({}) {
                         username: e.target.value,
                       }))
                     }
-                  ></input>
+                    placeholder="Enter your username"
+                  />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+
+                <div>
+                  <Label
+                    htmlFor="email"
+                    className="text-sm font-medium text-gray-700 mb-1 block"
+                  >
+                    Email
+                  </Label>
                   <input
-                    className="py-3 px-4 block w-full border-2 border-gray-200 rounded-md text-sm shadow-sm text-gray-400 focus:outline-none"
+                    id="email"
+                    type="email"
+                    className="w-full px-4 py-2.5 rounded-lg border border-gray-300 bg-gray-50 text-gray-500 cursor-not-allowed"
                     value={userData.email}
                     readOnly
-                  ></input>
+                    placeholder="your.email@example.com"
+                  />
                 </div>
-              </CardContent>
-            </Card>
-          </div>
-          <div className="pt-6" onClick={handleUpdateProfile}>
-            <Button disabled={loading}>Save</Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          <div className="flex justify-end space-x-4 mt-8">
+            <Button variant="outline" onClick={handleBack} className="px-6">
+              Back
+            </Button>
+            <Button
+              onClick={handleUpdateProfile}
+              disabled={loading}
+              className="px-6 bg-blue-600 hover:bg-blue-700 text-white"
+            >
+              {loading ? "Saving..." : "Save Changes"}
+            </Button>
           </div>
         </div>
       </div>
-
-      // <form onSubmit={updateProfile} className="form-widget">
-      //   <div>
-      //     <label htmlFor="email">Email</label>
-      //     <input id="email" type="text" value={session.user.email} disabled />
-      //   </div>
-      //   <div>
-      //     <label htmlFor="username">Name</label>
-      //     <input
-      //       id="username"
-      //       type="text"
-      //       required
-      //       value={username || ""}
-      //       onChange={(e) => setUsername(e.target.value)}
-      //     />
-      //   </div>
-      //   <div>
-      //     <label htmlFor="website">Website</label>
-      //     <input
-      //       id="website"
-      //       type="url"
-      //       value={website || ""}
-      //       onChange={(e) => setWebsite(e.target.value)}
-      //     />
-      //   </div>
-
-      //   <div>
-      //     <button
-      //       className="button block primary"
-      //       type="submit"
-      //       disabled={loading}
-      //     >
-      //       {loading ? "Loading ..." : "Update"}
-      //     </button>
-      //   </div>
-
-      //   <div>
-      //     <button
-      //       className="button block"
-      //       type="button"
-      //       onClick={() => supabase.auth.signOut()}
-      //     >
-      //       Sign Out
-      //     </button>
-      //   </div>
-      // </form>
     )
   );
 }

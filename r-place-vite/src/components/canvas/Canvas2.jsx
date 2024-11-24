@@ -446,7 +446,6 @@ const Canvas2 = ({}) => {
   }
 
   return (
-    // TODO - Handle socket conenction to droplet
     socketConnections && (
       <>
         <div className="h-screen w-screen fixed flex items-center justify-center bg-white overflow-hidden">

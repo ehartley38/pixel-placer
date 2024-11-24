@@ -7,10 +7,12 @@ export const useSession = () => useContext(SessionContext);
 
 export const SessionProvider = ({ children }) => {
   const [session, setSession] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
+      setIsLoading(false)
     });
 
     const {
@@ -23,7 +25,7 @@ export const SessionProvider = ({ children }) => {
   }, []);
 
   return (
-    <SessionContext.Provider value={{ session }}>
+    <SessionContext.Provider value={{ session, isLoading }}>
       {children}
     </SessionContext.Provider>
   );

@@ -30,15 +30,11 @@ export const AuthModal = ({
     }
 
     try {
-      const response = await axiosInstance.post("/auth/verify-turnstile", {
-        turnstileToken: turnstileToken,
+      // await supabase.auth.signInWithOtp({ email });
+      const res = await axiosInstance.post("/auth/sendOTP", {
+        email: email,
+        turnstileToken: turnstileToken
       });
-
-      if (response.status == 200) {
-        await supabase.auth.signInWithOtp({ email });
-      } else {
-        alert(response.message || "Login failed");
-      }
     } catch (err) {
       alert(err.error_description || err.message);
     } finally {
@@ -46,6 +42,37 @@ export const AuthModal = ({
       setShowSuccessModal(true);
     }
   };
+
+  // const handleLogin = async (event) => {
+  //   event.preventDefault();
+
+  //   setIsLoading(true);
+
+    // const turnstileToken = window.turnstile.getResponse();
+
+    // if (!turnstileToken) {
+    //   alert("Please complete the CAPTCHA");
+    //   setIsLoading(false);
+    //   return;
+    // }
+
+  //   try {
+  //     const response = await axiosInstance.post("/auth/verify-turnstile", {
+  //       turnstileToken: turnstileToken,
+  //     });
+
+  //     if (response.status == 200) {
+  //       await supabase.auth.signInWithOtp({ email });
+  //     } else {
+  //       alert(response.message || "Login failed");
+  //     }
+  //   } catch (err) {
+  //     alert(err.error_description || err.message);
+  //   } finally {
+  //     setIsLoading(false);
+  //     setShowSuccessModal(true);
+  //   }
+  // };
 
   const handlePencilSquareClick = (event) => {
     event.preventDefault();
