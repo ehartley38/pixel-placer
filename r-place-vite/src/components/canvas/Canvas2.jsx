@@ -59,6 +59,7 @@ const Canvas2 = ({}) => {
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [email, setEmail] = useState("");
+  const [showSpaceHelper, setShowSpaceHelper] = useState(true)
 
   // Handle socket connections
   useEffect(() => {
@@ -329,6 +330,7 @@ const Canvas2 = ({}) => {
             addToPixelBatch(x, y, activeColour);
           }
         }
+        setShowSpaceHelper(false)
       }
     }
 
@@ -490,6 +492,8 @@ const Canvas2 = ({}) => {
           <ColourPicker
             activeColour={activeColour}
             setActiveColour={setActiveColour}
+            showSpaceHelper={showSpaceHelper}
+            setShowSpaceHelper={setShowSpaceHelper}
           />
         )}
       </>

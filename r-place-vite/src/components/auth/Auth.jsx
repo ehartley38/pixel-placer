@@ -30,7 +30,7 @@ export default function Auth({ session }) {
   return (
     <div className="row flex flex-center text-black">
       <div className="col-6 form-widget">
-        <h1 className="header">R-Place</h1>
+        <h1 className="header">Pixel-Placer</h1>
         <p className="description">
           Sign in via magic link with your email below
         </p>

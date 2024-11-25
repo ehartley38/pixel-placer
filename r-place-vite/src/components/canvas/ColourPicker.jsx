@@ -2,7 +2,12 @@ import React, { useRef, useEffect } from "react";
 import { useDraggable } from "react-use-draggable-scroll";
 import colourPalette from "../../utils/pallette";
 
-const ColourPicker = ({ activeColour, setActiveColour }) => {
+const ColourPicker = ({
+  activeColour,
+  setActiveColour,
+  showSpaceHelper,
+  setShowSpaceHelper,
+}) => {
   const ref = useRef(null);
   const { events } = useDraggable(ref);
 
@@ -31,28 +36,39 @@ const ColourPicker = ({ activeColour, setActiveColour }) => {
   };
 
   return (
-    <div className="flex justify-center fixed bottom-0  w-full bg-transparent mb-6">
-      <div
-        ref={ref}
-        className="flex overflow-x-auto space-x-4 p-1 mx-10 cursor-grab active:cursor-grabbing"
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
-        {...events}
-      >
-        {colourPalette.map((colour, index) => (
-          <div
-            key={index}
-            className="w-9 h-9 rounded-full cursor-pointer hover:scale-110 transition-transform duration-200 flex-shrink-0 my-1"
-            style={{
-              backgroundColor: `rgba(${colour.rgba.join(",")})`,
-              border: `2px solid ${
-                index === activeColour ? "#42afed" : "#C5C5C5"
-              }`,
-            }}
-            onClick={() => handleColourSelect(index)}
-          />
-        ))}
+    <>
+      <div className="flex-col justify-center text-center fixed bottom-0  w-full bg-transparent mb-6">
+        <div className="w-full mb-2 flex flex-col items-center">
+          {showSpaceHelper && (
+            <div className="bg-black/70 text-white px-4 py-2 rounded-lg shadow-lg animate-fade-in flex items-center space-x-2">
+              <span className="text-sm font-medium">
+                Hold space and drag to multi-paint
+              </span>
+            </div>
+          )}
+        </div>
+        <div
+          ref={ref}
+          className="flex overflow-x-auto space-x-4 p-1 mx-10 cursor-grab active:cursor-grabbing"
+          style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
+          {...events}
+        >
+          {colourPalette.map((colour, index) => (
+            <div
+              key={index}
+              className="w-9 h-9 rounded-full cursor-pointer hover:scale-110 transition-transform duration-200 flex-shrink-0 my-1"
+              style={{
+                backgroundColor: `rgba(${colour.rgba.join(",")})`,
+                border: `2px solid ${
+                  index === activeColour ? "#42afed" : "#C5C5C5"
+                }`,
+              }}
+              onClick={() => handleColourSelect(index)}
+            />
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
