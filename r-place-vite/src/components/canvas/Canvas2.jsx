@@ -9,6 +9,7 @@ import { Coordinates } from "./Coordinates";
 import { OnlineCount } from "./OnlineCount";
 import { AuthModal } from "../auth/AuthModal";
 import { useSession } from "../../context/sessionProvider";
+import { useCanvasState } from "../../hooks/useCanvasState";
 
 // const canvasWidth = import.meta.env.VITE_CANVAS_WIDTH;
 const canvasWidth = 1000;
@@ -16,10 +17,6 @@ const BATCH_INTERVAL = 500;
 const MAX_BATCH_SIZE = 100;
 const CONCURRENT_CONNECTIONS_INTERVAL = 15000;
 
-const abgrPalette = colourPalette.map(({ rgba }) => {
-  const [r, g, b, a] = rgba;
-  return (a << 24) | (b << 16) | (g << 8) | r;
-});
 
 const dragThreshold = 10;
 const zoomIntensity = 0.1;
@@ -30,20 +27,23 @@ const arrowKeyStep = 10;
 // TODO - Add a max batch size to prevent very large updates
 
 const Canvas2 = ({}) => {
-  const canvasRef = useRef(null);
-  const offscreenCanvasRef = useRef(null);
   const containerRef = useRef(null);
-  const imageDataRef = useRef(null);
-  const updateQueueRef = useRef([]);
   const hoverTimerRef = useRef(null);
   const batchTimerRef = useRef(null);
   const localUpdateQueueRef = useRef([]);
   const pixelBatchSetRef = useRef(new Set());
 
   const { session } = useSession();
+  const {
+    canvasRef,
+    updateQueueRef,
+    isLoading,
+    scale,
+    setScale,
+    offset,
+    setOffset,
+  } = useCanvasState();
 
-  const [scale, setScale] = useState(1);
-  const [offset, setOffset] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
   const [isClick, setIsClick] = useState(false);
   const [startPan, setStartPan] = useState({ x: 0, y: 0 });
@@ -55,7 +55,6 @@ const Canvas2 = ({}) => {
   const [isSpaceDown, setIsSpaceDown] = useState(false);
   const [pixelBatch, setPixelBatch] = useState([]);
   const [socketConnections, setSocketConnections] = useState(null);
-  const [isLoading, setIsLoading] = useState(true);
   const [showLoginModal, setShowLoginModal] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [email, setEmail] = useState("");
@@ -90,96 +89,6 @@ const Canvas2 = ({}) => {
     };
   }, []);
 
-  // Fetch initial canvas data
-  useEffect(() => {
-    // Off screen canvas used for initial load
-    offscreenCanvasRef.current = document.createElement("canvas");
-    offscreenCanvasRef.current.width = canvasWidth;
-    offscreenCanvasRef.current.height = canvasWidth;
-
-    const fetchCanvasState = async () => {
-      setIsLoading(true);
-      try {
-        const canvasStateResponse = await axiosBinaryResInstance.get(
-          "/get-canvas",
-          {
-            responseType: "arraybuffer",
-          }
-        );
-
-        const canvasState = new Uint8Array(canvasStateResponse.data);
-
-        const offscreenContext = offscreenCanvasRef.current.getContext("2d");
-
-        const imageData = offscreenContext.createImageData(
-          canvasWidth,
-          canvasWidth
-        );
-        const buffer = new ArrayBuffer(imageData.data.length);
-        const uint8Array = new Uint8ClampedArray(buffer);
-        const uint32Array = new Uint32Array(buffer);
-
-        let pixelIndex = 0;
-
-        // Store the pixel colour in reverse-byte order (ABGR) so that bytes automatically fall in to the correct position when
-        // using the Uint8ClampedArray (uint8clampedarray is what the imagadata object expects)
-        // The uint8Array and uint32Array are just different views of the same underlying buffer.
-        // So when we write to uint32Array, we're actually modifying the data that uint8Array sees as well
-        for (let i = 0; i < canvasState.length; i++) {
-          const colourIndex = canvasState[i];
-
-          uint32Array[pixelIndex++] = abgrPalette[colourIndex];
-        }
-
-        imageData.data.set(uint8Array);
-        imageDataRef.current = imageData;
-      } catch (err) {
-        console.error("Error fetching canvas state:", err);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchCanvasState();
-
-    const centreOffsetX = (window.innerWidth - canvasWidth * scale) / 2;
-    const centreOffsetY = (window.innerHeight - canvasWidth * scale) / 2;
-    setOffset({ x: centreOffsetX, y: centreOffsetY });
-
-    window.addEventListener("keydown", handleKeyDown);
-  }, []);
-
-  // Start render loop when canvas had finished loading
-  useEffect(() => {
-    if (!isLoading && canvasRef.current && offscreenCanvasRef.current) {
-      const context = canvasRef.current.getContext("2d");
-      context.putImageData(imageDataRef.current, 0, 0);
-
-      // Start the render loop after the initial image is drawn
-      const renderLoop = () => {
-        const imageData = imageDataRef.current;
-        if (!imageData || !context) return;
-
-        const serverUpdates = updateQueueRef.current.splice(0);
-        const localUpdates = localUpdateQueueRef.current.splice(0);
-
-        const updates = [...serverUpdates, ...localUpdates];
-
-        if (updates.length > 0) {
-          updates.forEach(({ x, y, colourIndex }) => {
-            const index = (y * canvasWidth + x) * 4;
-            const uint32Array = new Uint32Array(imageData.data.buffer);
-            uint32Array[index / 4] = abgrPalette[colourIndex];
-          });
-          context.putImageData(imageData, 0, 0);
-        }
-
-        requestAnimationFrame(renderLoop);
-      };
-
-      requestAnimationFrame(renderLoop);
-    }
-  }, [isLoading]);
 
   const updatePixelBatch = async (batch) => {
     try {
