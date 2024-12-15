@@ -6,7 +6,7 @@ export const initialiseRedis = () => {
   redis = new Redis({
     host: process.env.REDIS_CLOUD_HOST,
     password: process.env.REDIS_CLOUD_PASSWORD,
-    port: 15218,
+    port: 10160,
   });
 
   redis.on("error", (err) => {
