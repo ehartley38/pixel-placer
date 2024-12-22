@@ -2,11 +2,8 @@ import { useState, useEffect } from "react";
 import { supabase } from "../../services/supabaseClient";
 import { useSession } from "../../context/sessionProvider";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useNavigate } from "react-router-dom";
 import { useToast } from "@/hooks/use-toast";
 
@@ -65,7 +62,7 @@ export default function Account({}) {
     };
 
     try {
-       await supabase.from("profiles").upsert(updates);
+      await supabase.from("profiles").upsert(updates);
 
       toast({
         title: "Profile updated",

@@ -71,7 +71,7 @@ export const useCanvasState = () => {
       const context = canvasRef.current.getContext("2d");
       context.putImageData(imageDataRef.current, 0, 0);
 
-      const renderLoop = () => {
+      const renderLoop = () => {        
         const imageData = imageDataRef.current;
         if (!imageData || !context) return;
 

@@ -6,7 +6,6 @@ const ColourPicker = ({
   activeColour,
   setActiveColour,
   showSpaceHelper,
-  setShowSpaceHelper,
 }) => {
   const ref = useRef(null);
   const { events } = useDraggable(ref);

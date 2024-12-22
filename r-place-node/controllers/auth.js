@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { supabase } from "../utils/supabaseClient.js";
-
 const authRouter = Router();
 const TURNSTILE_SECRET_KEY = process.env.TURNSTILE_SECRET_KEY;
 

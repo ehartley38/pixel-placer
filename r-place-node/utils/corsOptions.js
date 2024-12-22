@@ -5,7 +5,6 @@ import { config } from "./config.js";
 export const corsOptions = {
   
     origin: (origin, callback) => {
-      console.log("Origin:", origin);
       
       if (config.allowedOrigins.indexOf(origin) !== -1 || !origin) {
         callback(null, true);

@@ -1,5 +1,5 @@
 const colourPalette = [
-  { name: "Light Grey", rgba: [211, 211, 211, 255] }, // Light Grey
+  { name: "Light Grey", rgba: [211, 211, 211, 255] },
   // Reds and Pinks
   { name: "Crimson", rgba: [220, 20, 60, 255] },
   { name: "Salmon", rgba: [250, 128, 114, 255] },

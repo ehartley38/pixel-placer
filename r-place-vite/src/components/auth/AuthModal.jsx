@@ -1,5 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
-import { supabase } from "../../services/supabaseClient";
+import { useState } from "react";
 import { InboxSVG } from "../ui/InboxSVG";
 import { PencilSquare } from "../ui/PencilSquare";
 import { axiosInstance } from "../../services/axios";
@@ -34,7 +33,6 @@ export const AuthModal = ({
     }
 
     try {
-      // await supabase.auth.signInWithOtp({ email });
       const res = await axiosInstance.post("/auth/sendOTP", {
         email: email,
         turnstileToken: turnstileToken,
