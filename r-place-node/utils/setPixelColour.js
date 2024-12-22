@@ -1,4 +1,3 @@
-import Redis from "ioredis";
 import { getRedisClient } from "./initialiseRedis.js";
 
 const canvasWidth = process.env.CANVAS_WIDTH

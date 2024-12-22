@@ -1,5 +1,4 @@
 import { Redis } from 'ioredis';
-// import 'dotenv/config'
 
 const canvasWidth = process.env.CANVAS_WIDTH
 

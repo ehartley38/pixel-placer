@@ -11,7 +11,6 @@ const createCanvas = async () => {
 
   for (let x = 0; x < canvasWidth; x++) {
     for (let y = 0; y < canvasWidth; y++) {
-      // const randomColour = Math.floor(Math.random() * 31);
       const randomColour = 0
 
       await setPixelColour(x, y, randomColour);

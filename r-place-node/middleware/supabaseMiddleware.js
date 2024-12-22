@@ -29,9 +29,5 @@ export const supabaseMiddleware = async (req, res, next) => {
     return res.status(401).json({ Error: "Invalid token" });
   }
 
-  // TODO - Put more thought into this. Apply it to the relevant routes. Figure out if
-  // The service key is the right thing to use
-  // Should I be decoding the JWT instead?
-
   next();
 };
