@@ -1,6 +1,5 @@
 import { Router } from "express";
 import { supabase } from "../utils/supabaseClient.js";
-import { createUsername } from "../utils/createUsername.js";
 
 const authRouter = Router();
 const TURNSTILE_SECRET_KEY = process.env.TURNSTILE_SECRET_KEY;
@@ -17,30 +16,34 @@ authRouter.post("/sendOTP", async (req, res) => {
 
   try {
     // Verify turnstile
-    const verifyResponse = await fetch(
-      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          secret: TURNSTILE_SECRET_KEY,
-          response: turnstileToken,
-        }),
-      }
-    );
+    let verifyResponse;
+    let response;
 
-    const response = await verifyResponse.json();
+    if (process.env.NODE_ENV === "production") {
+      verifyResponse = await fetch(
+        "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            secret: TURNSTILE_SECRET_KEY,
+            response: turnstileToken,
+          }),
+        }
+      );
+
+      response = await verifyResponse.json();
+    } else {
+      response = {success: "true"}
+    }
 
     if (!response.success) {
       return res
         .status(400)
         .json({ success: false, message: "Turnstile verification failed" });
     } else {
-      const {data} = await supabase.auth.signInWithOtp({ email });
-      console.log("Data:", data);
-      
+      const { data } = await supabase.auth.signInWithOtp({ email });
 
-      await createUsername(supabase, data.user)
 
       return res
         .status(200)
@@ -48,7 +51,7 @@ authRouter.post("/sendOTP", async (req, res) => {
     }
   } catch (err) {
     console.log(err);
-    
+
     return res
       .status(500)
       .json({ success: false, message: "Server error", error: err.message });

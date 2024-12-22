@@ -17,23 +17,27 @@ export const AuthModal = ({
   const siteKey = import.meta.env.VITE_TURNSTILE_SITE_KEY;
 
   const handleLogin = async (event) => {
+    let turnstileToken;
     event.preventDefault();
-
     setIsLoading(true);
 
-    const turnstileToken = window.turnstile.getResponse();
+    if (process.env.NODE_ENV === "production") {
+      turnstileToken = window.turnstile.getResponse();
 
-    if (!turnstileToken) {
-      alert("Please complete the CAPTCHA");
-      setIsLoading(false);
-      return;
+      if (!turnstileToken) {
+        alert("Please complete the CAPTCHA");
+        setIsLoading(false);
+        return;
+      }
+    } else {
+      turnstileToken = "test"
     }
 
     try {
       // await supabase.auth.signInWithOtp({ email });
       const res = await axiosInstance.post("/auth/sendOTP", {
         email: email,
-        turnstileToken: turnstileToken
+        turnstileToken: turnstileToken,
       });
     } catch (err) {
       alert(err.error_description || err.message);
@@ -42,37 +46,6 @@ export const AuthModal = ({
       setShowSuccessModal(true);
     }
   };
-
-  // const handleLogin = async (event) => {
-  //   event.preventDefault();
-
-  //   setIsLoading(true);
-
-    // const turnstileToken = window.turnstile.getResponse();
-
-    // if (!turnstileToken) {
-    //   alert("Please complete the CAPTCHA");
-    //   setIsLoading(false);
-    //   return;
-    // }
-
-  //   try {
-  //     const response = await axiosInstance.post("/auth/verify-turnstile", {
-  //       turnstileToken: turnstileToken,
-  //     });
-
-  //     if (response.status == 200) {
-  //       await supabase.auth.signInWithOtp({ email });
-  //     } else {
-  //       alert(response.message || "Login failed");
-  //     }
-  //   } catch (err) {
-  //     alert(err.error_description || err.message);
-  //   } finally {
-  //     setIsLoading(false);
-  //     setShowSuccessModal(true);
-  //   }
-  // };
 
   const handlePencilSquareClick = (event) => {
     event.preventDefault();
@@ -145,10 +118,15 @@ export const AuthModal = ({
                             ></input>
                           </div>
                         </div>
-                        <Turnstile
-                          siteKey={siteKey}
-                          onVerify={setTurnstileToken}
-                        />
+                        {process.env.NODE_ENV === "production" ? (
+                          <Turnstile
+                            siteKey={siteKey}
+                            onVerify={setTurnstileToken}
+                          />
+                        ) : (
+                          <></>
+                        )}
+
                         <button
                           type="submit"
                           className="py-3 px-4 inline-flex justify-center items-center gap-2 rounded-md border border-transparent font-semibold bg-blue-500 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all text-sm dark:focus:ring-offset-gray-800"

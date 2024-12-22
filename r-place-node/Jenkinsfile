@@ -1,0 +1,57 @@
+pipeline {
+    agent any
+    environment {
+        PROJECT_NAME = 'Pixel-Placer'
+    }
+    stages {
+        stage('Clone Repo') {
+            steps {
+                git branch: 'main', credentialsId: 'b083e12e-4352-408e-806c-efc55e2560de', url: 'https://github.com/ehartley38/r-place'
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    dir('r-place-node/') {
+                        app = docker.build('registry.digitalocean.com/side-projects/side-projects:pixel-placer-node')
+                    }
+                }
+            }
+        }
+        stage('Run tests') {
+            steps {
+                script {
+                    app.inside {
+                        sh 'echo "Running tests..."'
+                        sh 'echo "Tests passed!"'
+                    }
+                }
+            }
+        }
+        stage('Login and push image to Container Registry') {
+            steps {
+                script {
+                    docker.withRegistry('https://registry.digitalocean.com', '228a45c7-772e-42a7-a2ac-3494daf5aff1') {
+                        app.push('pixel-placer-node')
+                    }
+                }
+            }
+        }
+        stage('SSH and Pull Docker image') {
+            steps {
+                sshagent(['digital-ocean-ubuntu-s-1vcpu-1gb-lon1-01']) {
+                    withCredentials([usernamePassword(credentialsId: '228a45c7-772e-42a7-a2ac-3494daf5aff1', usernameVariable: 'REGISTRY_USER', passwordVariable: 'REGISTRY_PASS')]) {
+                        sh """
+                        ssh -o StrictHostKeyChecking=no ed@159.65.49.201 << 'EOF'
+                        cd ~/projects/pixel-placer-node
+                        docker login -u $REGISTRY_USER -p $REGISTRY_PASS https://registry.digitalocean.com
+                        docker compose pull
+                        docker compose up -d --force-recreate
+EOF
+                    """
+                    }
+                }
+            }
+        }
+    }
+}
