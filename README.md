@@ -1,4 +1,5 @@
-A Collaborative, Interactive 1-Million Pixel Canvas, inspired by Reddit's r/place
+A Collaborative, Interactive 1-Million Pixel Canvas, inspired by Reddit's r/place.
+Check it out [here](https://pixel-placer.netlify.app/) (Not compatible with mobile!)
 ## Frontend
 - Built with **React**, **JavaScript**, and **Vite**.
 - Includes a color picker, user authentication modal, and a UI to display pixel metadata, coordinates, and online user count.
