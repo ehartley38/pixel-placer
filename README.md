@@ -1,5 +1,7 @@
 A Collaborative, Interactive 1-Million Pixel Canvas, inspired by Reddit's r/place.
 Check it out [here](https://pixel-placer.netlify.app/) (Not compatible with mobile!)
+
+Also check out this [article](https://medium.com/@ehartley38/devops-deep-dive-hosting-your-node-js-app-on-a-remote-server-with-jenkins-06dd3b084c33) I wrote which describes the backend CI/CD process!
 ## Frontend
 - Built with **React**, **JavaScript**, and **Vite**.
 - Includes a color picker, user authentication modal, and a UI to display pixel metadata, coordinates, and online user count.
